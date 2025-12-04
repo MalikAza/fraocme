@@ -65,6 +65,7 @@ def timed(func: Callable) -> Callable:
         start = time.perf_counter()
         result = func(*args, **kwargs)
         elapsed = (time.perf_counter() - start) * 1000
+        #TODO: better output formatting (colors etc)
         print(f"{func.__name__}: {elapsed:.2f}ms")
         return result
     return wrapper
@@ -87,7 +88,7 @@ def benchmark(iterations: int = 100):
             avg = sum(times) / len(times)
             min_t = min(times)
             max_t = max(times)
-            
+            #TODO: better output formatting (colors etc)
             print(f"{func.__name__} ({iterations} runs):")
             print(f"  avg: {avg:.2f}ms | min: {min_t:.2f}ms | max: {max_t:.2f}ms")
             

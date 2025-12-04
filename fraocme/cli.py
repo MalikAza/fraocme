@@ -2,8 +2,11 @@ import argparse
 import sys
 from pathlib import Path
 
+from fraocme.debug.printer import print_header
+
 from .core.runner import Runner
 from .profiling.stats import Stats
+from .debug.colors import c
 
 
 def main():
@@ -94,7 +97,6 @@ def cmd_run(args):
     runner = Runner()
     stats = Stats()
     
-    # Determine which parts to run
     parts = [args.part] if args.part else [1, 2]
     
     # Run all days
@@ -108,11 +110,11 @@ def cmd_run(args):
     
     # Run specific day
     if args.day is None:
-        print("\033[91mError: Specify a day number or use --all\033[0m")
+        print(c.error("Error: Specify a day number or use --all"))
         sys.exit(1)
     
     if not runner.day_exists(args.day):
-        print(f"\033[91mError: Day {args.day} not found\033[0m")
+        print(c.error("Error: Day ") + c.bold(c.green(str(args.day))) + c.error(" not found"))
         sys.exit(1)
     
     results = runner.run_day(args.day, parts=parts, debug=args.debug)
@@ -124,7 +126,12 @@ def cmd_run(args):
 
 def cmd_stats(args):
     """Handle stats command."""
-    return NotImplemented
+    print_header("Profiling Statistics")
+    stats = Stats()
+    if args.day is not None:
+        stats.print_day(args.day, best_only=args.best)
+    else:
+        stats.print_all(best_only=args.best)
 
     
 

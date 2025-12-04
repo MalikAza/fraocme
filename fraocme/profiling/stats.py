@@ -167,7 +167,6 @@ class Stats:
             p1_str = f"{p1:.2f}ms" if p1 else "-"
             p2_str = f"{p2:.2f}ms" if p2 else "-"
             
-            # Color based on time
             p1_colored = self._color_time_str(p1, p1_str)
             p2_colored = self._color_time_str(p2, p2_str)
             

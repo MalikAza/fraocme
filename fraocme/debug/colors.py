@@ -1,3 +1,5 @@
+
+#TODO: there is maybe too much?? (thanks copilot)
 class Colors:
     """ANSI color codes."""
     

@@ -3,7 +3,9 @@ from pathlib import Path
 from typing import TypeVar
 from copy import deepcopy
 import time
+import traceback
 from fraocme.debug import c
+from fraocme.debug.printer import print_header
 
 T = TypeVar('T')
 
@@ -72,9 +74,7 @@ class Solver(ABC):
     
     def run(self, parts: list[int] = [1, 2]) -> None:
         """Run and print results."""
-        print(f"\n{'═' * 40}")
-        print(f"  Day {self.day}")
-        print(f"{'═' * 40}")
+        print_header("Day " + c.bold(c.green(self.day)))
         results: dict[int, tuple[int | None, float]] = {}
 
         for part in parts:
@@ -101,6 +101,10 @@ class Solver(ABC):
             
         except Exception as e:
             print(f"  Part {c.cyan(part_name)}: {c.error(f'ERROR - {e}')}")
+            if self.debug_enabled:
+                # TODO: add a traceback flag rather than using debug?
+                tb = traceback.format_exc()
+                print(c.muted(tb))
             return None, 0.0
     
     # ─────────────────────────────────────────────────────────
@@ -109,5 +113,19 @@ class Solver(ABC):
     
     def debug(self, *args, **kwargs) -> None:
         """Print only if debug mode is enabled."""
-        if self.debug_enabled:
-            print(*args, **kwargs)
+        if not self.debug_enabled:
+            return
+
+        processed_args = []
+        for a in args:
+            if callable(a):
+                try:
+                    res = a()
+                    if res is not None:
+                        processed_args.append(res)
+                except Exception as e:
+                    processed_args.append(f"<debug callable raised: {e}>")
+            else:
+                processed_args.append(a)
+
+        print(*processed_args, **kwargs)
