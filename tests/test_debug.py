@@ -3,7 +3,9 @@ from io import StringIO
 import sys
 
 from fraocme.ui import Colors, c
-from fraocme.ui.printer import print_header, print_section, print_grid, print_max_in_rows
+from fraocme.ui.printer import print_header, print_section
+from fraocme.grid.printer import print_grid
+from fraocme.common.printer import print_max_in_rows
 
 
 class TestColors(unittest.TestCase):
@@ -214,7 +216,7 @@ class TestPrintGrid(unittest.TestCase):
         sys.stdout = captured
         
         grid = [["a", "b"], ["c", "d"]]
-        print_grid(grid, sep=",")
+        print_grid(grid, separator=",")
         
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
@@ -255,7 +257,7 @@ class TestPrintGrid(unittest.TestCase):
         sys.stdout = captured
         
         grid = [["x", "y", "z"]]
-        print_grid(grid, sep="-")
+        print_grid(grid, separator="-")
         
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
