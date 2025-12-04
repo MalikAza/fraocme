@@ -5,7 +5,6 @@ import sys
 from fraocme.grid.parser import lines, int_grid
 from fraocme.grid.printer import print_grid
 from fraocme.grid.utils import GridUtils
-from fraocme.grid.types import Position
 
 
 class TestGridParser(unittest.TestCase):

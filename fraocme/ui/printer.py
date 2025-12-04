@@ -1,6 +1,3 @@
-from typing import Any
-
-from .colors import c
 
 
 def print_header(text: str, width: int = 40) -> None:

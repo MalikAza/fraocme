@@ -1,6 +1,4 @@
-from typing import Callable, TypeVar
-
-from .types import Grid
+from typing import TypeVar
 
 T = TypeVar('T')
 

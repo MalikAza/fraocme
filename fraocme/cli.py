@@ -1,6 +1,5 @@
 import argparse
 import sys
-from pathlib import Path
 
 from fraocme.ui.printer import print_header
 

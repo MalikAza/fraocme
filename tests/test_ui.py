@@ -4,7 +4,6 @@ import sys
 
 from fraocme.ui.colors import Colors, c
 from fraocme.ui.printer import print_header, print_section
-from fraocme.grid.printer import print_grid
 
 
 class TestColors(unittest.TestCase):
