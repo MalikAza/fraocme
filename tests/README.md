@@ -14,13 +14,13 @@ uv run tests
 uv run python -m unittest discover tests -v
 
 # Run specific test file
-uv run python -m unittest tests.test_parsers -v
+uv run python -m unittest tests.test_core -v
 
 # Run specific test class
-uv run python -m unittest tests.test_parsers.TestBasicParsers -v
+uv run python -m unittest tests.test_core.TestSolver -v
 
 # Run specific test method
-uv run python -m unittest tests.test_parsers.TestBasicParsers.test_lines -v
+uv run python -m unittest tests.test_core.TestSolver.test_solver_initialization -v
 ```
 
 The primary command is `uv run tests` which uses the test runner configured in `pyproject.toml`.
@@ -47,19 +47,23 @@ uv run pytest tests/ --cov=fraocme --cov-report=html
 python -m unittest discover tests -v
 
 # Run specific file
-python -m unittest tests.test_parsers
+python -m unittest tests.test_core
 ```
 
 ## Test Organization
 
-### `test_parsers.py`
-Tests for the `fraocme.parsers` module:
-- **BasicParsers**: `lines()`, `ints()`, `floats()`, `ints_per_line()`
-- **WordParsers**: `words()` function for extracting alphabetic words
-- **BlockParsers**: `blocks()` for splitting by delimiters
-- **CSVParsers**: `csv()` and `csv_ints()` for parsing comma-separated values
-- **GridParsers**: `char_grid()` and `int_grid()` for 2D grids
-- **MappedParsers**: `mapped()` for custom line parsers
+### `test_cli.py`
+Tests for the `fraocme.cli` module:
+- **MainArgumentParsing**: CLI argument parsing with argparse
+  - Command routing (run, stats)
+  - Flag handling (--all, --debug, --part, --no-stats)
+- **CmdRun**: Run command handler
+  - Running specific days
+  - Running all days
+  - Part selection
+- **CmdStats**: Stats command handler
+  - Displaying statistics for days
+  - Best-only filtering
 
 ### `test_core.py`
 Tests for the `fraocme.core` module:
@@ -84,6 +88,38 @@ Tests for the `fraocme.debug` module:
   - `print_grid()` - 2D grid display with separators
   - `print_max_in_rows()` - max value per row
 
+### `test_ui.py`
+Tests for the `fraocme.ui` module:
+- **Colors**: ANSI color code constants and helper class
+- **ColorHelper (c)**: Semantic color methods
+  - Color functions: `red()`, `green()`, `blue()`, etc.
+  - Style functions: `bold()`, `italic()`, `underline()`
+  - Semantic colors: `success()`, `error()`, `warning()`, `info()`
+  - Time formatting: `time()` with performance-based coloring
+- **Printer Functions**:
+  - `print_header()` - headers with box drawing characters
+  - `print_section()` - section dividers
+
+### `test_common.py`
+Tests for the `fraocme.common` module:
+- **Printer**: Common printing utilities
+  - `print_max_in_rows()` - display maximum value per row
+
+### `test_grid.py`
+Tests for the `fraocme.grid` module:
+- **Parser**: Grid parsing utilities
+  - `lines()` - parse lines from raw string
+  - `int_grid()` - parse 2D grid of single digits
+- **Printer**: Grid display utilities
+  - `print_grid()` - display 2D grids with optional highlighting
+- **GridUtils**: Utility class for grid navigation
+  - Position checking: `is_position_out_of_bounds()`
+  - Direction movement: `get_position_up/down/left/right()`
+  - Diagonal movement: `get_position_diagonal()`
+  - Multi-position retrieval: `get_positions_around()`, `get_positions_in_nsew()`, `get_positions_in_corners()`
+  - Value operations: `search_value()`, `get_cell_value()`
+  - Start/end position tracking
+
 ### `test_profiling.py`
 Tests for the `fraocme.profiling` module:
 - **Timer**: Benchmarking with lap tracking
@@ -100,9 +136,10 @@ Tests for the `fraocme.profiling` module:
 ## Test Coverage
 
 The test suite provides comprehensive coverage of:
-- ✅ Input parsing for various formats
+- ✅ CLI argument parsing and command handling
 - ✅ Core solver and runner functionality
-- ✅ Debug/console formatting utilities
+- ✅ Grid utilities and navigation
+- ✅ UI/color formatting utilities
 - ✅ Performance profiling tools
 - ✅ Edge cases and error handling
 
