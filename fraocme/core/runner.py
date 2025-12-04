@@ -66,7 +66,7 @@ class Runner:
             raise ValueError(f"No Solver subclass found in day {day}")
         
         # Instantiate and configure
-        solver = solver_class(debug=debug)
+        solver = solver_class(day=day, debug=debug)
         solver.set_input_dir(day_dir)
         
         return solver
