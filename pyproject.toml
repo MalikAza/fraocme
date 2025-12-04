@@ -7,7 +7,7 @@ requires-python = ">=3.13"
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0", "pytest-cov>=4.0"]
+dev = ["pytest>=7.0", "pytest-cov>=4.0", "ruff>=0.1.0"]
 
 [project.scripts]
 fraocme = "fraocme.cli:main"
@@ -15,6 +15,13 @@ tests = "fraocme.test_runner:run"
 
 [tool.uv]
 package = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N"]  # pycodestyle, Pyflakes, warnings, isort, pep8-naming
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

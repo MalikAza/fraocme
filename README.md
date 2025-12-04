@@ -88,6 +88,25 @@ self.debug(lambda: expensive_debug_print(data))
 Run times are collected by the framework and can be saved to `stats.json`. Some helper
 decorators (e.g. `@timed`, `@benchmark`) are available under `fraocme.profiling`.
 
+**Code Quality**
+
+The project uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting.
+
+```bash
+# Check for linting issues
+uv run ruff check .
+
+# Format code
+uv run ruff format .
+
+# Fix fixable issues
+uv run ruff check --fix .
+```
+
+**Tests**
+
+See [tests/README.md](tests/README.md) for test organization and running tests.
+
 ---
 
 # TODO: all the tests...

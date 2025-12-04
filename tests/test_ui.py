@@ -1,6 +1,6 @@
+import sys
 import unittest
 from io import StringIO
-import sys
 
 from fraocme.ui.colors import Colors, c
 from fraocme.ui.printer import print_header, print_section
@@ -11,50 +11,50 @@ class TestColors(unittest.TestCase):
 
     def test_reset_code(self):
         """Test reset code exists."""
-        self.assertEqual(Colors.RESET, '\033[0m')
+        self.assertEqual(Colors.RESET, "\033[0m")
 
     def test_regular_colors_exist(self):
         """Test regular color codes exist."""
-        self.assertEqual(Colors.BLACK, '\033[30m')
-        self.assertEqual(Colors.RED, '\033[31m')
-        self.assertEqual(Colors.GREEN, '\033[32m')
-        self.assertEqual(Colors.YELLOW, '\033[33m')
-        self.assertEqual(Colors.BLUE, '\033[34m')
-        self.assertEqual(Colors.MAGENTA, '\033[35m')
-        self.assertEqual(Colors.CYAN, '\033[36m')
-        self.assertEqual(Colors.WHITE, '\033[37m')
+        self.assertEqual(Colors.BLACK, "\033[30m")
+        self.assertEqual(Colors.RED, "\033[31m")
+        self.assertEqual(Colors.GREEN, "\033[32m")
+        self.assertEqual(Colors.YELLOW, "\033[33m")
+        self.assertEqual(Colors.BLUE, "\033[34m")
+        self.assertEqual(Colors.MAGENTA, "\033[35m")
+        self.assertEqual(Colors.CYAN, "\033[36m")
+        self.assertEqual(Colors.WHITE, "\033[37m")
 
     def test_bright_colors_exist(self):
         """Test bright color codes exist."""
-        self.assertEqual(Colors.BRIGHT_BLACK, '\033[90m')
-        self.assertEqual(Colors.BRIGHT_RED, '\033[91m')
-        self.assertEqual(Colors.BRIGHT_GREEN, '\033[92m')
-        self.assertEqual(Colors.BRIGHT_YELLOW, '\033[93m')
-        self.assertEqual(Colors.BRIGHT_BLUE, '\033[94m')
-        self.assertEqual(Colors.BRIGHT_MAGENTA, '\033[95m')
-        self.assertEqual(Colors.BRIGHT_CYAN, '\033[96m')
-        self.assertEqual(Colors.BRIGHT_WHITE, '\033[97m')
+        self.assertEqual(Colors.BRIGHT_BLACK, "\033[90m")
+        self.assertEqual(Colors.BRIGHT_RED, "\033[91m")
+        self.assertEqual(Colors.BRIGHT_GREEN, "\033[92m")
+        self.assertEqual(Colors.BRIGHT_YELLOW, "\033[93m")
+        self.assertEqual(Colors.BRIGHT_BLUE, "\033[94m")
+        self.assertEqual(Colors.BRIGHT_MAGENTA, "\033[95m")
+        self.assertEqual(Colors.BRIGHT_CYAN, "\033[96m")
+        self.assertEqual(Colors.BRIGHT_WHITE, "\033[97m")
 
     def test_background_colors_exist(self):
         """Test background color codes exist."""
-        self.assertEqual(Colors.BG_BLACK, '\033[40m')
-        self.assertEqual(Colors.BG_RED, '\033[41m')
-        self.assertEqual(Colors.BG_GREEN, '\033[42m')
-        self.assertEqual(Colors.BG_YELLOW, '\033[43m')
-        self.assertEqual(Colors.BG_BLUE, '\033[44m')
-        self.assertEqual(Colors.BG_MAGENTA, '\033[45m')
-        self.assertEqual(Colors.BG_CYAN, '\033[46m')
-        self.assertEqual(Colors.BG_WHITE, '\033[47m')
+        self.assertEqual(Colors.BG_BLACK, "\033[40m")
+        self.assertEqual(Colors.BG_RED, "\033[41m")
+        self.assertEqual(Colors.BG_GREEN, "\033[42m")
+        self.assertEqual(Colors.BG_YELLOW, "\033[43m")
+        self.assertEqual(Colors.BG_BLUE, "\033[44m")
+        self.assertEqual(Colors.BG_MAGENTA, "\033[45m")
+        self.assertEqual(Colors.BG_CYAN, "\033[46m")
+        self.assertEqual(Colors.BG_WHITE, "\033[47m")
 
     def test_style_codes_exist(self):
         """Test style codes exist."""
-        self.assertEqual(Colors.BOLD, '\033[1m')
-        self.assertEqual(Colors.DIM, '\033[2m')
-        self.assertEqual(Colors.ITALIC, '\033[3m')
-        self.assertEqual(Colors.UNDERLINE, '\033[4m')
-        self.assertEqual(Colors.BLINK, '\033[5m')
-        self.assertEqual(Colors.REVERSE, '\033[7m')
-        self.assertEqual(Colors.STRIKETHROUGH, '\033[9m')
+        self.assertEqual(Colors.BOLD, "\033[1m")
+        self.assertEqual(Colors.DIM, "\033[2m")
+        self.assertEqual(Colors.ITALIC, "\033[3m")
+        self.assertEqual(Colors.UNDERLINE, "\033[4m")
+        self.assertEqual(Colors.BLINK, "\033[5m")
+        self.assertEqual(Colors.REVERSE, "\033[7m")
+        self.assertEqual(Colors.STRIKETHROUGH, "\033[9m")
 
 
 class TestColorHelper(unittest.TestCase):
@@ -250,7 +250,7 @@ class TestPrinter(unittest.TestCase):
         sys.stdout = captured_output
         print_header("Test Header")
         sys.stdout = sys.__stdout__
-        
+
         output = captured_output.getvalue()
         self.assertIn("Test Header", output)
         self.assertIn("═", output)
@@ -261,11 +261,11 @@ class TestPrinter(unittest.TestCase):
         sys.stdout = captured_output
         print_header("Test", width=20)
         sys.stdout = sys.__stdout__
-        
+
         output = captured_output.getvalue()
         self.assertIn("Test", output)
         # Count the equals signs
-        lines = output.strip().split('\n')
+        lines = output.strip().split("\n")
         self.assertEqual(len(lines[0]), 20)  # Top border
 
     def test_print_section_default_width(self):
@@ -274,7 +274,7 @@ class TestPrinter(unittest.TestCase):
         sys.stdout = captured_output
         print_section("Test Section")
         sys.stdout = sys.__stdout__
-        
+
         output = captured_output.getvalue()
         self.assertIn("Test Section", output)
         self.assertIn("─", output)
@@ -285,10 +285,10 @@ class TestPrinter(unittest.TestCase):
         sys.stdout = captured_output
         print_section("Test", width=30)
         sys.stdout = sys.__stdout__
-        
+
         output = captured_output.getvalue()
         self.assertIn("Test", output)
-        lines = output.strip().split('\n')
+        lines = output.strip().split("\n")
         self.assertEqual(len(lines[0]), 30)
 
     def test_print_header_structure(self):
@@ -297,11 +297,11 @@ class TestPrinter(unittest.TestCase):
         sys.stdout = captured_output
         print_header("Title")
         sys.stdout = sys.__stdout__
-        
-        lines = captured_output.getvalue().strip().split('\n')
-        self.assertTrue(lines[0].startswith('═'))
-        self.assertIn('Title', lines[1])
-        self.assertTrue(lines[2].startswith('═'))
+
+        lines = captured_output.getvalue().strip().split("\n")
+        self.assertTrue(lines[0].startswith("═"))
+        self.assertIn("Title", lines[1])
+        self.assertTrue(lines[2].startswith("═"))
 
     def test_print_section_structure(self):
         """Test print_section has correct structure."""
@@ -309,12 +309,12 @@ class TestPrinter(unittest.TestCase):
         sys.stdout = captured_output
         print_section("Section")
         sys.stdout = sys.__stdout__
-        
-        lines = captured_output.getvalue().strip().split('\n')
-        self.assertTrue(lines[0].startswith('─'))
-        self.assertIn('Section', lines[1])
-        self.assertTrue(lines[2].startswith('─'))
+
+        lines = captured_output.getvalue().strip().split("\n")
+        self.assertTrue(lines[0].startswith("─"))
+        self.assertIn("Section", lines[1])
+        self.assertTrue(lines[2].startswith("─"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

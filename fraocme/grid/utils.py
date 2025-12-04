@@ -1,13 +1,20 @@
 from functools import cache
 from typing import Tuple
 
-from .types import AroundPositions, CornersPositions, Direction, Grid, NSEWPositions, Position
+from .types import (
+    AroundPositions,
+    CornersPositions,
+    Direction,
+    Grid,
+    NSEWPositions,
+    Position,
+)
 
 
 class GridUtils:
     """Utility class for navigating and manipulating 2D grids."""
-    
-    possible_directions: list[Direction] = ['^', '>', 'v', '<']
+
+    possible_directions: list[Direction] = ["^", ">", "v", "<"]
     start: Position | None = None
     end: Position | None = None
 
@@ -15,21 +22,21 @@ class GridUtils:
         self,
         data: str | Grid,
         start_value: str | None = None,
-        end_value: str | None = None
+        end_value: str | None = None,
     ):
         """
         Initialize grid utilities.
-        
+
         Args:
             data: Raw string input or pre-parsed grid
             start_value: Optional character to mark as start position
             end_value: Optional character to mark as end position
         """
         if isinstance(data, str):
-            self.grid = data.split('\n')
+            self.grid = data.split("\n")
         else:
             self.grid = data
-            
+
         self._start_value = start_value
         self._end_value = end_value
         self._search_start_and_end()
@@ -84,20 +91,20 @@ class GridUtils:
     def get_positions_in_corners(self, position: Position) -> CornersPositions:
         """Get all four corner positions around a point."""
         return {
-            'down_right': self.get_position_down_right(position),
-            'down_left': self.get_position_down_left(position),
-            'up_right': self.get_position_up_right(position),
-            'up_left': self.get_position_up_left(position),
+            "down_right": self.get_position_down_right(position),
+            "down_left": self.get_position_down_left(position),
+            "up_right": self.get_position_up_right(position),
+            "up_left": self.get_position_up_left(position),
         }
 
     @cache
     def get_positions_in_nsew(self, position: Position) -> NSEWPositions:
         """Get all four cardinal direction positions (North, South, East, West)."""
         return {
-            'down': self.get_position_down(position),
-            'right': self.get_position_right(position),
-            'up': self.get_position_up(position),
-            'left': self.get_position_left(position),
+            "down": self.get_position_down(position),
+            "right": self.get_position_right(position),
+            "up": self.get_position_up(position),
+            "left": self.get_position_left(position),
         }
 
     @cache
@@ -105,29 +112,31 @@ class GridUtils:
         """Get all 8 positions around a point (cardinal + corners)."""
         return {
             **self.get_positions_in_nsew(position),
-            **self.get_positions_in_corners(position)
+            **self.get_positions_in_corners(position),
         }
 
     @cache
-    def get_position_by_direction(self, position: Position, direction: Direction) -> Position:
+    def get_position_by_direction(
+        self, position: Position, direction: Direction
+    ) -> Position:
         """
         Get the position in a specific direction.
-        
+
         Args:
             position: Starting position
             direction: One of '^' (up), '>' (right), 'v' (down), '<' (left)
-        
+
         Returns:
             New position after moving in the specified direction
         """
         match direction:
-            case '^':
+            case "^":
                 return self.get_position_up(position)
-            case '>':
+            case ">":
                 return self.get_position_right(position)
-            case 'v':
+            case "v":
                 return self.get_position_down(position)
-            case '<':
+            case "<":
                 return self.get_position_left(position)
 
     def _search_start_and_end(self) -> None:
@@ -143,10 +152,10 @@ class GridUtils:
     def search_value(self, value: str) -> Tuple[Position, ...]:
         """
         Find all positions containing a specific value.
-        
+
         Args:
             value: Character/value to search for
-        
+
         Returns:
             Tuple of positions where the value was found
         """
@@ -161,10 +170,10 @@ class GridUtils:
     def get_cell_value(self, position: Position) -> str | None:
         """
         Get the value at a specific position.
-        
+
         Args:
             position: Grid position to check
-        
+
         Returns:
             Cell value or None if out of bounds
         """

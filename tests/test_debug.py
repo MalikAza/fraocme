@@ -1,11 +1,11 @@
+import sys
 import unittest
 from io import StringIO
-import sys
 
+from fraocme.common.printer import print_max_in_rows
+from fraocme.grid.printer import print_grid
 from fraocme.ui import Colors, c
 from fraocme.ui.printer import print_header, print_section
-from fraocme.grid.printer import print_grid
-from fraocme.common.printer import print_max_in_rows
 
 
 class TestColors(unittest.TestCase):
@@ -109,12 +109,12 @@ class TestPrintHeader(unittest.TestCase):
         """Test header prints correctly."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         print_header("Test Header")
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("Test Header", output)
         self.assertIn("═", output)
 
@@ -122,12 +122,12 @@ class TestPrintHeader(unittest.TestCase):
         """Test header respects width parameter."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         print_header("Test", width=20)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         # Line should be approximately 20 chars wide
         lines = output.strip().split("\n")
         header_line = lines[0]
@@ -137,12 +137,12 @@ class TestPrintHeader(unittest.TestCase):
         """Test header has default width."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         print_header("X")
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         lines = output.strip().split("\n")
         header_line = lines[0]
         self.assertEqual(len(header_line), 40)
@@ -155,12 +155,12 @@ class TestPrintSection(unittest.TestCase):
         """Test section prints correctly."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         print_section("Test Section")
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("Test Section", output)
         self.assertIn("─", output)
 
@@ -168,12 +168,12 @@ class TestPrintSection(unittest.TestCase):
         """Test section respects width parameter."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         print_section("Test", width=30)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         lines = output.strip().split("\n")
         section_line = lines[0]
         self.assertEqual(len(section_line), 30)
@@ -182,12 +182,12 @@ class TestPrintSection(unittest.TestCase):
         """Test section has default width."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         print_section("X")
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         lines = output.strip().split("\n")
         section_line = lines[0]
         self.assertEqual(len(section_line), 40)
@@ -200,13 +200,13 @@ class TestPrintGrid(unittest.TestCase):
         """Test grid prints correctly."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [["a", "b"], ["c", "d"]]
         print_grid(grid)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("ab", output)
         self.assertIn("cd", output)
 
@@ -214,13 +214,13 @@ class TestPrintGrid(unittest.TestCase):
         """Test grid with custom separator."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [["a", "b"], ["c", "d"]]
         print_grid(grid, separator=",")
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("a,b", output)
         self.assertIn("c,d", output)
 
@@ -228,13 +228,13 @@ class TestPrintGrid(unittest.TestCase):
         """Test grid with numbers."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [[1, 2, 3], [4, 5, 6]]
         print_grid(grid)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("123", output)
         self.assertIn("456", output)
 
@@ -242,26 +242,26 @@ class TestPrintGrid(unittest.TestCase):
         """Test empty grid."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = []
         print_grid(grid)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertEqual(output.strip(), "")
 
     def test_print_grid_single_row(self):
         """Test grid with single row."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [["x", "y", "z"]]
         print_grid(grid, separator="-")
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("x-y-z", output)
 
 
@@ -272,13 +272,13 @@ class TestPrintMaxInRows(unittest.TestCase):
         """Test finding max in rows."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [[1, 2, 3], [4, 5, 6]]
         print_max_in_rows(grid)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("3", output)
         self.assertIn("6", output)
 
@@ -286,13 +286,13 @@ class TestPrintMaxInRows(unittest.TestCase):
         """Test max with unequal row lengths."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [[1, 5], [2, 3, 8], [10]]
         print_max_in_rows(grid)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("5", output)
         self.assertIn("8", output)
         self.assertIn("10", output)
@@ -301,26 +301,26 @@ class TestPrintMaxInRows(unittest.TestCase):
         """Test max with single row."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [[1, 5, 3]]
         print_max_in_rows(grid)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("5", output)
 
     def test_print_max_in_rows_with_negatives(self):
         """Test max with negative numbers."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [[-5, -1, -10], [2, -3, 5]]
         print_max_in_rows(grid)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("-1", output)
         self.assertIn("5", output)
 
@@ -328,13 +328,13 @@ class TestPrintMaxInRows(unittest.TestCase):
         """Test max with empty row."""
         captured = StringIO()
         sys.stdout = captured
-        
+
         grid = [[1, 2], [], [3, 4]]
         print_max_in_rows(grid)
-        
+
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-        
+
         self.assertIn("2", output)
         self.assertIn("Empty row", output)
         self.assertIn("4", output)

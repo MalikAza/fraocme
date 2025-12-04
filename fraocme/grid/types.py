@@ -3,6 +3,7 @@ from typing import Literal, Tuple, TypedDict
 
 class CornersPositions(TypedDict):
     """Positions at the four corners relative to a center point."""
+
     down_right: Tuple[int, int]
     down_left: Tuple[int, int]
     up_right: Tuple[int, int]
@@ -11,6 +12,7 @@ class CornersPositions(TypedDict):
 
 class NSEWPositions(TypedDict):
     """Positions in the four cardinal directions (North, South, East, West)."""
+
     down: Tuple[int, int]
     right: Tuple[int, int]
     up: Tuple[int, int]
@@ -19,10 +21,11 @@ class NSEWPositions(TypedDict):
 
 class AroundPositions(CornersPositions, NSEWPositions):
     """All 8 positions around a center point (cardinal + corners)."""
+
     pass
 
 
-Direction = Literal['^', '>', 'v', '<']
+Direction = Literal["^", ">", "v", "<"]
 """Cardinal direction symbols: ^ (up), > (right), v (down), < (left)."""
 
 Position = Tuple[int, int]

@@ -1,9 +1,9 @@
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
-import tempfile
-import shutil
 
-from fraocme.core import Solver, Runner
+from fraocme.core import Runner, Solver
 
 
 class DummySolver(Solver):
@@ -26,7 +26,7 @@ class TestSolver(unittest.TestCase):
         """Set up test fixtures."""
         self.solver = DummySolver(day=1, debug=False)
         self.temp_dir = tempfile.mkdtemp()
-        
+
     def tearDown(self):
         """Clean up temporary files."""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
@@ -51,7 +51,7 @@ class TestSolver(unittest.TestCase):
         """Test setting input directory."""
         path = Path(self.temp_dir)
         result = self.solver.set_input_dir(path)
-        
+
         self.assertEqual(self.solver._input_dir, path)
         self.assertIs(result, self.solver)  # Returns self for chaining
 
@@ -69,7 +69,7 @@ class TestSolver(unittest.TestCase):
     def test_load_missing_input_file(self):
         """Test load raises error when input.txt doesn't exist."""
         self.solver.set_input_dir(Path(self.temp_dir))
-        
+
         with self.assertRaises(FileNotFoundError):
             self.solver.load()
 
@@ -77,20 +77,20 @@ class TestSolver(unittest.TestCase):
         """Test load correctly parses input."""
         input_file = Path(self.temp_dir) / "input.txt"
         input_file.write_text("line1\nline2\nline3")
-        
+
         self.solver.set_input_dir(Path(self.temp_dir))
         data = self.solver.load()
-        
+
         self.assertEqual(data, ["line1", "line2", "line3"])
 
     def test_load_strips_whitespace(self):
         """Test load strips leading/trailing whitespace."""
         input_file = Path(self.temp_dir) / "input.txt"
         input_file.write_text("  line1\nline2  \n")
-        
+
         self.solver.set_input_dir(Path(self.temp_dir))
         data = self.solver.load()
-        
+
         self.assertEqual(data, ["line1", "line2"])
 
     def test_load_with_copy_input_true(self):
@@ -98,11 +98,11 @@ class TestSolver(unittest.TestCase):
         solver = DummySolver(day=1, copy_input=True)
         input_file = Path(self.temp_dir) / "input.txt"
         input_file.write_text("line1\nline2")
-        
+
         solver.set_input_dir(Path(self.temp_dir))
         data1 = solver.load()
         data2 = solver.load()
-        
+
         # Different list objects (due to deepcopy)
         self.assertIsNot(data1, data2)
 
@@ -156,7 +156,7 @@ class TestRunner(unittest.TestCase):
         """Test day directories are zero-padded."""
         day1 = self.runner.get_day_dir(1)
         day10 = self.runner.get_day_dir(10)
-        
+
         self.assertTrue(str(day1).endswith("day_01"))
         self.assertTrue(str(day10).endswith("day_10"))
 
@@ -170,7 +170,7 @@ class TestRunner(unittest.TestCase):
         day_dir.mkdir(parents=True)
         solution_file = day_dir / "solution.py"
         solution_file.write_text("# test")
-        
+
         self.assertTrue(self.runner.day_exists(1))
 
     def test_get_all_days_empty(self):
@@ -189,7 +189,7 @@ class TestRunner(unittest.TestCase):
             day_dir = self.runner.get_day_dir(day)
             day_dir.mkdir(parents=True)
             (day_dir / "solution.py").write_text("# test")
-        
+
         days = self.runner.get_all_days()
         self.assertEqual(days, [1, 2, 3])
 
@@ -198,7 +198,7 @@ class TestRunner(unittest.TestCase):
         day_dir = self.runner.get_day_dir(1)
         day_dir.mkdir(parents=True)
         # No solution.py created
-        
+
         self.assertEqual(self.runner.get_all_days(), [])
 
     def test_get_all_days_ignores_invalid_dirs(self):
@@ -207,7 +207,7 @@ class TestRunner(unittest.TestCase):
         invalid_dir = self.base_dir / "invalid_name"
         invalid_dir.mkdir()
         (invalid_dir / "solution.py").write_text("# test")
-        
+
         self.assertEqual(self.runner.get_all_days(), [])
 
     def test_load_solver_not_found(self):
@@ -219,7 +219,7 @@ class TestRunner(unittest.TestCase):
         """Test load_solver successfully loads a solver."""
         day_dir = self.runner.get_day_dir(1)
         day_dir.mkdir(parents=True)
-        
+
         # Create a simple solver
         solution_code = """
 from fraocme.core import Solver
@@ -227,18 +227,18 @@ from fraocme.core import Solver
 class DaySolver(Solver):
     def parse(self, raw):
         return raw.strip()
-    
+
     def part1(self, data):
         return 42
-    
+
     def part2(self, data):
         return 99
 """
         (day_dir / "solution.py").write_text(solution_code)
         (day_dir / "input.txt").write_text("test input")
-        
+
         solver = self.runner.load_solver(1)
-        
+
         self.assertIsInstance(solver, Solver)
         self.assertEqual(solver.day, 1)
         self.assertEqual(solver._input_dir, day_dir)
@@ -247,7 +247,7 @@ class DaySolver(Solver):
         """Test load_solver respects debug flag."""
         day_dir = self.runner.get_day_dir(1)
         day_dir.mkdir(parents=True)
-        
+
         solution_code = """
 from fraocme.core import Solver
 
@@ -257,7 +257,7 @@ class DaySolver(Solver):
     def part2(self, data): return 99
 """
         (day_dir / "solution.py").write_text(solution_code)
-        
+
         solver = self.runner.load_solver(1, debug=True)
         self.assertTrue(solver.debug_enabled)
 
@@ -265,10 +265,10 @@ class DaySolver(Solver):
         """Test load_solver raises error if no Solver subclass found."""
         day_dir = self.runner.get_day_dir(1)
         day_dir.mkdir(parents=True)
-        
+
         # File with no Solver subclass
         (day_dir / "solution.py").write_text("x = 42")
-        
+
         with self.assertRaises(ValueError):
             self.runner.load_solver(1)
 
