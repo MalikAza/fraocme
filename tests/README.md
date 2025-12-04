@@ -8,7 +8,7 @@ Comprehensive test suite for the `fraocme` project using Python's `unittest` fra
 
 ```bash
 # Run all tests using the project's test command
-uv run test
+uv run tests
 
 # Run all tests with verbose output (direct discovery)
 uv run python -m unittest discover tests -v
@@ -23,7 +23,7 @@ uv run python -m unittest tests.test_parsers.TestBasicParsers -v
 uv run python -m unittest tests.test_parsers.TestBasicParsers.test_lines -v
 ```
 
-The primary command is `uv run test` which uses the test runner configured in `pyproject.toml`.
+The primary command is `uv run tests` which uses the test runner configured in `pyproject.toml`.
 
 
 

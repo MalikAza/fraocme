@@ -2,7 +2,8 @@ import unittest
 from io import StringIO
 import sys
 
-from fraocme.debug import Colors, c, print_header, print_section, print_grid, print_max_in_rows
+from fraocme.ui import Colors, c
+from fraocme.ui.printer import print_header, print_section, print_grid, print_max_in_rows
 
 
 class TestColors(unittest.TestCase):
