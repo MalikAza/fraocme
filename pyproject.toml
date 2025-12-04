@@ -8,6 +8,7 @@ dependencies = []
 
 [project.scripts]
 fraocme = "fraocme.cli:main"
+test = "fraocme.test_runner:run"
 
 [tool.uv]
 package = true
