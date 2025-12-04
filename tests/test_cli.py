@@ -13,8 +13,9 @@ class TestMainArgumentParsing(unittest.TestCase):
         """Test main with no arguments prints help."""
         with patch('sys.argv', ['fraocme']):
             with patch('sys.exit') as mock_exit:
-                main()
-                mock_exit.assert_called_once_with(0)
+                with patch('sys.stdout', new=StringIO()):
+                    main()
+                    mock_exit.assert_called_once_with(0)
 
     def test_run_command_with_day(self):
         """Test run command with a specific day."""
@@ -186,8 +187,9 @@ class TestCmdRun(unittest.TestCase):
         args.debug = False
         args.no_stats = False
 
-        with self.assertRaises(SystemExit):
-            cmd_run(args)
+        with patch('sys.stdout', new=StringIO()):
+            with self.assertRaises(SystemExit):
+                cmd_run(args)
 
     @patch('fraocme.cli.Runner')
     @patch('fraocme.cli.Stats')
@@ -205,8 +207,9 @@ class TestCmdRun(unittest.TestCase):
         args.debug = False
         args.no_stats = False
 
-        with self.assertRaises(SystemExit):
-            cmd_run(args)
+        with patch('sys.stdout', new=StringIO()):
+            with self.assertRaises(SystemExit):
+                cmd_run(args)
 
 
 class TestCmdStats(unittest.TestCase):

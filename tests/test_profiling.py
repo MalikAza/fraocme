@@ -190,7 +190,12 @@ class TestTimedDecorator(unittest.TestCase):
         def add(a, b):
             return a + b
         
+        captured = StringIO()
+        sys.stdout = captured
+        
         result = add(2, 3)
+        
+        sys.stdout = sys.__stdout__
         self.assertEqual(result, 5)
 
     def test_timed_decorator_prints_output(self):
@@ -222,7 +227,12 @@ class TestBenchmarkDecorator(unittest.TestCase):
         def add(a, b):
             return a + b
         
+        captured = StringIO()
+        sys.stdout = captured
+        
         result = add(2, 3)
+        
+        sys.stdout = sys.__stdout__
         self.assertEqual(result, 5)
 
     def test_benchmark_decorator_prints_output(self):
