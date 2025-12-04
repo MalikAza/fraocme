@@ -2,11 +2,11 @@ import argparse
 import sys
 from pathlib import Path
 
-from fraocme.debug.printer import print_header
+from fraocme.ui.printer import print_header
 
 from .core.runner import Runner
 from .profiling.stats import Stats
-from .debug.colors import c
+from .ui.colors import c
 
 
 def main():

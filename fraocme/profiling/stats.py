@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Any
 
-from fraocme.debug import c
+from fraocme.ui import c
 
 
 class Stats:

@@ -4,8 +4,8 @@ from typing import TypeVar
 from copy import deepcopy
 import time
 import traceback
-from fraocme.debug import c
-from fraocme.debug.printer import print_header
+from fraocme.ui import c
+from fraocme.ui.printer import print_header
 
 T = TypeVar('T')
 
@@ -20,7 +20,7 @@ class Solver(ABC):
         - part2(data) -> int
     """
     
-    def __init__(self, day: int, debug: bool = False, copy_input: bool = True):
+    def __init__(self, day: int | None = None, debug: bool = False, copy_input: bool = True):
         self.day = day
         self.debug_enabled = debug
         self.copy_input = copy_input
