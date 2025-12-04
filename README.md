@@ -9,6 +9,10 @@ A compact, testable framework for writing Advent of Code solutions in Python.
 ```bash
 pip install -e .
 ```
+or
+```bash
+uv sync
+```
 
 **Quick Start**
 

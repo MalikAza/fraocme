@@ -8,3 +8,6 @@ dependencies = []
 
 [project.scripts]
 fraocme = "fraocme.cli:main"
+
+[tool.uv]
+package = true
