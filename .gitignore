@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Framework usage tests folders/files
+days/*
+stats.json

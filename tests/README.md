@@ -55,7 +55,7 @@ python -m unittest tests.test_core
 ### `test_cli.py`
 Tests for the `fraocme.cli` module:
 - **MainArgumentParsing**: CLI argument parsing with argparse
-  - Command routing (run, stats)
+  - Command routing (run, stats, create)
   - Flag handling (--all, --debug, --part, --no-stats)
 - **CmdRun**: Run command handler
   - Running specific days
@@ -64,6 +64,15 @@ Tests for the `fraocme.cli` module:
 - **CmdStats**: Stats command handler
   - Displaying statistics for days
   - Best-only filtering
+- **CreateCommand**: Create command handler (19 tests)
+  - Directory and file creation
+  - Template generation with correct class names
+  - Method signatures and inheritance
+  - Duplicate day warnings
+  - Day number validation (1-25 range enforcement)
+  - Boundary testing (day 1, day 25)
+  - Invalid inputs (day 0, day 26, negative, large numbers)
+  - CLI integration
 
 ### `test_core.py`
 Tests for the `fraocme.core` module:

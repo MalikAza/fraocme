@@ -22,9 +22,13 @@ uv run test
 
 **Quick Start**
 
-1. Create a day folder such as `days/day_00/` with `input.txt` and `solution.py`.
-2. Implement a `Solver` subclass that defines `parse`, `part1`, and `part2`.
-3. Run it with the CLI: `fraocme run <day>`.
+1. Create a day folder with template files:
+   ```bash
+   fraocme create 1
+   ```
+2. Edit the generated `days/day_01/solution.py` and implement `part1` and `part2` methods.
+3. Add your puzzle input to `days/day_01/input.txt`.
+4. Run it with the CLI: `fraocme run 1`.
 
 Example `Day0` (compact):
 
@@ -58,11 +62,24 @@ Notes:
 
 **CLI Overview**
 
-- Run a specific day: `fraocme run 1`
-- Run a specific part: `fraocme run 1 -p 1`
-- Run with debug output: `fraocme run 1 --debug`
-- Run all days: `fraocme run --all`
-- View stats (work-in-progress): `fraocme stats`
+- **Create** a new day solution:
+  ```bash
+  fraocme create <day>  # Creates days/day_XX/ with solution.py and input.txt
+                        # Day must be between 1 and 25
+  ```
+- **Run** solutions:
+  ```bash
+  fraocme run <day>          # Run a specific day
+  fraocme run 1 -p 1         # Run only part 1
+  fraocme run 1 --debug      # Run with debug output
+  fraocme run --all          # Run all days
+  ```
+- **View** statistics:
+  ```bash
+  fraocme stats              # Show all stats
+  fraocme stats 1            # Show stats for day 1
+  fraocme stats --best       # Show only best times
+  ```
 
 **Parsers & Utilities**
 

@@ -50,6 +50,15 @@ def main():
     )
 
     # ─────────────────────────────────────────────────────────
+    # create command
+    # ─────────────────────────────────────────────────────────
+
+    create_parser = subparsers.add_parser(
+        "create", help="Create a new day solution folder and files"
+    )
+    create_parser.add_argument("day", type=int, help="Day number to create")
+
+    # ─────────────────────────────────────────────────────────
     # Parse and dispatch
     # ─────────────────────────────────────────────────────────
 
@@ -63,6 +72,8 @@ def main():
         cmd_run(args)
     elif args.command == "stats":
         cmd_stats(args)
+    elif args.command == "create":
+        cmd_create(args)
 
 
 # ─────────────────────────────────────────────────────────
@@ -114,6 +125,68 @@ def cmd_stats(args):
         stats.print_day(args.day, best_only=args.best)
     else:
         stats.print_all(best_only=args.best)
+
+
+def cmd_create(args):
+    """Handle create command."""
+    from pathlib import Path
+
+    day_num = args.day
+
+    # Validate day number
+    if day_num < 1 or day_num > 25:
+        print(
+            c.error("Error: Day number must be between 1 and 25, got ")
+            + c.bold(str(day_num))
+        )
+        sys.exit(1)
+
+    day_dir = Path.cwd() / "days" / f"day_{day_num:02d}"
+
+    # Check if day already exists
+    if day_dir.exists():
+        print(c.warning("Warning: ") + f"Day {day_num} already exists at {day_dir}")
+        return
+
+    # Create directory
+    day_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create input.txt
+    input_file = day_dir / "input.txt"
+    input_file.write_text("")
+
+    # Create solution.py template
+    day_class_name = f"Day{day_num}"
+    solution_template = f'''from fraocme import Solver
+
+
+class {day_class_name}(Solver):
+    def __init__(self, day: int = {day_num}, debug: bool = False):
+        super().__init__(day=day, debug=debug, copy_input=True)
+
+    def parse(self, raw: str):
+        """Parse the input data."""
+        return raw.strip().split("\\n")
+
+    def part1(self, data):
+        """Solve part 1."""
+        return None
+
+    def part2(self, data):
+        """Solve part 2."""
+        return None
+'''
+
+    solution_file = day_dir / "solution.py"
+    solution_file.write_text(solution_template)
+
+    print(
+        c.success("✓ Created day ")
+        + c.bold(c.cyan(str(day_num)))
+        + c.success(" at ")
+        + c.bold(str(day_dir))
+    )
+    print(f"  {c.muted('Created:')} {input_file.name}, {solution_file.name}")
 
 
 if __name__ == "__main__":

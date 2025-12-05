@@ -1,8 +1,9 @@
 import unittest
 from io import StringIO
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from fraocme.cli import cmd_run, cmd_stats, main
+from fraocme.cli import cmd_create, cmd_run, cmd_stats, main
 
 
 class TestMainArgumentParsing(unittest.TestCase):
@@ -259,6 +260,307 @@ class TestCmdStats(unittest.TestCase):
         cmd_stats(args)
 
         mock_stats.print_all.assert_called_once_with(best_only=True)
+
+
+class TestCreateCommand(unittest.TestCase):
+    """Test create command functionality."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.test_day_dir = Path.cwd() / "days" / "day_12"
+        # Clean up any existing test day
+        if self.test_day_dir.exists():
+            import shutil
+
+            shutil.rmtree(self.test_day_dir)
+
+    def tearDown(self):
+        """Clean up test fixtures."""
+        if self.test_day_dir.exists():
+            import shutil
+
+            shutil.rmtree(self.test_day_dir)
+
+    def test_create_command_creates_directory(self):
+        """Test that create command creates the day directory."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        self.assertTrue(self.test_day_dir.exists())
+
+    def test_create_command_creates_input_file(self):
+        """Test that create command creates input.txt file."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        input_file = self.test_day_dir / "input.txt"
+        self.assertTrue(input_file.exists())
+        self.assertEqual(input_file.read_text(), "")
+
+    def test_create_command_creates_solution_file(self):
+        """Test that create command creates solution.py file."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        solution_file = self.test_day_dir / "solution.py"
+        self.assertTrue(solution_file.exists())
+
+    def test_create_command_solution_contains_correct_class(self):
+        """Test that solution.py contains correct class name."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        solution_file = self.test_day_dir / "solution.py"
+        content = solution_file.read_text()
+
+        self.assertIn("class Day12(Solver):", content)
+        init_sig = "def __init__(self, day: int = 12, debug: bool = False):"
+        self.assertIn(init_sig, content)
+
+    def test_create_command_solution_has_parse_method(self):
+        """Test that solution.py contains parse method."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        solution_file = self.test_day_dir / "solution.py"
+        content = solution_file.read_text()
+
+        self.assertIn("def parse(self, raw: str):", content)
+        self.assertIn('return raw.strip().split("\\n")', content)
+
+    def test_create_command_solution_has_part_methods(self):
+        """Test that solution.py contains part1 and part2 methods."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        solution_file = self.test_day_dir / "solution.py"
+        content = solution_file.read_text()
+
+        self.assertIn("def part1(self, data):", content)
+        self.assertIn("def part2(self, data):", content)
+
+    def test_create_command_solution_inherits_from_solver(self):
+        """Test that solution.py imports and inherits from Solver."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        solution_file = self.test_day_dir / "solution.py"
+        content = solution_file.read_text()
+
+        self.assertIn("from fraocme import Solver", content)
+        self.assertIn("class Day12(Solver):", content)
+
+    def test_create_command_warns_if_day_exists(self):
+        """Test that create command warns if day already exists."""
+        args = MagicMock()
+        args.day = 12
+
+        # Create the day first time
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        # Try to create again
+        output = StringIO()
+        with patch("sys.stdout", output):
+            cmd_create(args)
+
+        output_text = output.getvalue()
+        self.assertIn("Warning:", output_text)
+        self.assertIn("Day 12 already exists", output_text)
+
+    def test_create_command_prints_success_message(self):
+        """Test that create command prints success message."""
+        args = MagicMock()
+        args.day = 12
+
+        output = StringIO()
+        with patch("sys.stdout", output):
+            cmd_create(args)
+
+        output_text = output.getvalue()
+        self.assertIn("Created day", output_text)
+        self.assertIn("12", output_text)
+
+    def test_create_command_prints_file_names(self):
+        """Test that create command prints created file names."""
+        args = MagicMock()
+        args.day = 12
+
+        output = StringIO()
+        with patch("sys.stdout", output):
+            cmd_create(args)
+
+        output_text = output.getvalue()
+        self.assertIn("input.txt", output_text)
+        self.assertIn("solution.py", output_text)
+
+    def test_create_command_different_day_numbers(self):
+        """Test create command with different day numbers."""
+        for day_num in [1, 5, 10, 25]:
+            day_dir = Path.cwd() / "days" / f"day_{day_num:02d}"
+            try:
+                args = MagicMock()
+                args.day = day_num
+
+                with patch("sys.stdout", new=StringIO()):
+                    cmd_create(args)
+
+                self.assertTrue(day_dir.exists())
+                solution_file = day_dir / "solution.py"
+                content = solution_file.read_text()
+                self.assertIn(f"class Day{day_num}(Solver):", content)
+                self.assertIn(f"day: int = {day_num}", content)
+            finally:
+                # Clean up
+                if day_dir.exists():
+                    import shutil
+
+                    shutil.rmtree(day_dir)
+
+    def test_create_command_with_argv(self):
+        """Test create command via command line arguments."""
+        with patch("sys.argv", ["fraocme", "create", "98"]):
+            with patch("fraocme.cli.cmd_create") as mock_create:
+                main()
+                mock_create.assert_called_once()
+                args = mock_create.call_args[0][0]
+                self.assertEqual(args.day, 98)
+
+    def test_create_command_validates_day_range_lower_bound(self):
+        """Test that create command rejects day 0."""
+        args = MagicMock()
+        args.day = 0
+
+        output = StringIO()
+        with patch("sys.stdout", output):
+            with patch("sys.exit") as mock_exit:
+                cmd_create(args)
+                mock_exit.assert_called_once_with(1)
+
+        output_text = output.getvalue()
+        self.assertIn("Error:", output_text)
+        self.assertIn("must be between 1 and 25", output_text)
+
+    def test_create_command_validates_day_range_upper_bound(self):
+        """Test that create command rejects day 26."""
+        args = MagicMock()
+        args.day = 26
+
+        output = StringIO()
+        with patch("sys.stdout", output):
+            with patch("sys.exit") as mock_exit:
+                cmd_create(args)
+                mock_exit.assert_called_once_with(1)
+
+        output_text = output.getvalue()
+        self.assertIn("Error:", output_text)
+        self.assertIn("must be between 1 and 25", output_text)
+
+    def test_create_command_validates_negative_day(self):
+        """Test that create command rejects negative day numbers."""
+        args = MagicMock()
+        args.day = -5
+
+        output = StringIO()
+        with patch("sys.stdout", output):
+            with patch("sys.exit") as mock_exit:
+                cmd_create(args)
+                mock_exit.assert_called_once_with(1)
+
+        output_text = output.getvalue()
+        self.assertIn("Error:", output_text)
+
+    def test_create_command_validates_large_day(self):
+        """Test that create command rejects very large day numbers."""
+        args = MagicMock()
+        args.day = 100
+
+        output = StringIO()
+        with patch("sys.stdout", output):
+            with patch("sys.exit") as mock_exit:
+                cmd_create(args)
+                mock_exit.assert_called_once_with(1)
+
+        output_text = output.getvalue()
+        self.assertIn("Error:", output_text)
+
+    def test_create_command_accepts_valid_range(self):
+        """Test that create command accepts all valid day numbers."""
+        for day in [1, 5, 12, 24, 25]:
+            day_dir = Path.cwd() / "days" / f"day_{day:02d}"
+            try:
+                args = MagicMock()
+                args.day = day
+
+                with patch("sys.stdout", new=StringIO()):
+                    cmd_create(args)
+
+                self.assertTrue(day_dir.exists())
+            finally:
+                # Clean up
+                if day_dir.exists():
+                    import shutil
+
+                    shutil.rmtree(day_dir)
+
+    def test_create_command_min_valid_day(self):
+        """Test that create command accepts day 1."""
+        test_day_dir = Path.cwd() / "days" / "day_01"
+        try:
+            args = MagicMock()
+            args.day = 1
+
+            with patch("sys.stdout", new=StringIO()):
+                cmd_create(args)
+
+            self.assertTrue(test_day_dir.exists())
+            solution_file = test_day_dir / "solution.py"
+            self.assertTrue(solution_file.exists())
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
+
+    def test_create_command_max_valid_day(self):
+        """Test that create command accepts day 25."""
+        test_day_dir = Path.cwd() / "days" / "day_25"
+        try:
+            args = MagicMock()
+            args.day = 25
+
+            with patch("sys.stdout", new=StringIO()):
+                cmd_create(args)
+
+            self.assertTrue(test_day_dir.exists())
+            solution_file = test_day_dir / "solution.py"
+            self.assertTrue(solution_file.exists())
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
 
 if __name__ == "__main__":
