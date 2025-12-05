@@ -231,3 +231,13 @@ def print_dict_head(data: dict[int, list[int]], n: int = 5) -> None:
     remaining = len(all_keys) - n
     if remaining > 0:
         print(c.muted(f"... and {remaining} more"))
+
+
+def print_max_in_rows(grid: list[list[int]]) -> None:
+    """Print the maximum value in each row."""
+    for row in grid:
+        if row:
+            max_val = max(row)
+            print(max_val)
+        else:
+            print("Empty row")

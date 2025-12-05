@@ -1,5 +1,11 @@
 from .parser import ints, ints_per_line, key_ints, lines, mapped, ranges, sections
-from .printer import print_dict_head, print_dict_row, print_ranges, print_row_stats
+from .printer import (
+    print_dict_head,
+    print_dict_row,
+    print_max_in_rows,
+    print_ranges,
+    print_row_stats,
+)
 from .utils import (
     all_equal,
     chunks,
@@ -53,4 +59,5 @@ __all__ = [
     "print_ranges",
     "print_dict_row",
     "print_dict_head",
+    "print_max_in_rows",
 ]
