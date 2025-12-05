@@ -12,3 +12,6 @@ wheels/
 # Framework usage tests folders/files
 days/*
 stats.json
+
+# Dev notes
+PUBLISHING.md
