@@ -30,13 +30,10 @@ jobs:
       - name: Run tests
         run: uv run tests
 
-      - name: Generate coverage report
-        run: uv run python -m coverage run -m unittest discover tests && uv run python -m coverage xml
+      - name: Run tests with coverage
+        run: uv run pytest --cov --cov-branch --cov-report=xml
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
