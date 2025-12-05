@@ -1,0 +1,34 @@
+name: Format Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Check code formatting
+        run: uv run ruff format . --check --diff
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "Format check completed."
+          echo "To fix formatting issues, run: uv run ruff format ."

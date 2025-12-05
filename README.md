@@ -1,5 +1,10 @@
 # Fraocme
 
+[![Tests](https://github.com/MalikAza/fraocme/actions/workflows/test.yml/badge.svg)](https://github.com/MalikAza/fraocme/actions/workflows/test.yml)
+[![Lint](https://github.com/MalikAza/fraocme/actions/workflows/lint.yml/badge.svg)](https://github.com/MalikAza/fraocme/actions/workflows/lint.yml)
+[![Format](https://github.com/MalikAza/fraocme/actions/workflows/format.yml/badge.svg)](https://github.com/MalikAza/fraocme/actions/workflows/format.yml)
+[![codecov](https://codecov.io/gh/MalikAza/fraocme/branch/main/graph/badge.svg)](https://codecov.io/gh/MalikAza/fraocme)
+
 A compact, testable framework for writing Advent of Code solutions in Python.
 
 **Goals:** simple project layout, helpful debug utilities, and reproducible timing/stats.
