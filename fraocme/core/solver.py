@@ -36,17 +36,17 @@ class Solver(ABC):
     @abstractmethod
     def parse(self, raw: str) -> T:
         """Parse raw input string into your data structure."""
-        ...
+        raise NotImplementedError("This method must be implemented to be used.")
 
     @abstractmethod
     def part1(self, data: T) -> int:
         """Solve part 1."""
-        ...
+        raise NotImplementedError("This method must be implemented to be used.")
 
     @abstractmethod
     def part2(self, data: T) -> int:
         """Solve part 2."""
-        ...
+        raise NotImplementedError("This method must be implemented to be used.")
 
     # ─────────────────────────────────────────────────────────
     # Input handling
