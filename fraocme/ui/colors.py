@@ -151,6 +151,34 @@ class c:  # noqa: N801
     def muted(text: str) -> str:
         return c.dim(text)
 
+    # Stats coloring
+    @staticmethod
+    def stat(
+        val: int | float,
+        min_val: int | float,
+        max_val: int | float,
+        median_val: int | float,
+    ) -> str:
+        """
+        Color a value based on its position in the dataset.
+        - Green: maximum
+        - Red: minimum
+        - Yellow: median
+        - Muted: other
+        """
+        if isinstance(val, float) and not val.is_integer():
+            text = f"{val:.2f}"
+        else:
+            text = str(int(val) if isinstance(val, float) else val)
+
+        if val == max_val:
+            return c.green(text)
+        elif val == min_val:
+            return c.red(text)
+        elif val == median_val:
+            return c.yellow(text)
+        return c.muted(text)
+
     # Time formatting (for solver output)
     @staticmethod
     def time(ms: float) -> str:
