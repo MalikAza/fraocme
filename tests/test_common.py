@@ -178,9 +178,11 @@ class TestCommonUtils(unittest.TestCase):
         self.assertEqual(common_utils.range_intersection((1, 10), (5, 15)), (5, 10))
         self.assertIsNone(common_utils.range_intersection((1, 5), (7, 10)))
 
-        merged = common_utils.merge_ranges([(10, 15), (1, 5), (3, 8), (16, 18)])
+        merged = common_utils.merge_ranges(
+            [(10, 15), (1, 5), (3, 8), (16, 18)], inclusive=False
+        )
 
-        self.assertEqual(merged, [(1, 8), (10, 18)])
+        self.assertEqual(merged, [(1, 8), (10, 15), (16, 18)])
 
         self.assertTrue(
             common_utils.within_range(5, [(1, 5), (10, 15)], inclusive=True)
