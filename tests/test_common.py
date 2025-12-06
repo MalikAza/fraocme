@@ -154,12 +154,8 @@ class TestCommonUtils(unittest.TestCase):
         self.assertEqual(common_utils.rotate([1, 2, 3, 4, 5], -2), [3, 4, 5, 1, 2])
         self.assertEqual(common_utils.rotate([1, 2, 3, 4, 5], 2), [4, 5, 1, 2, 3])
         self.assertEqual(common_utils.rotate([], 3), [])
-        self.assertEqual(
-            common_utils.unique([1, 2, 2, 3, 1, 4, 2]), [1, 2, 3, 4]
-        )
-        self.assertEqual(
-            common_utils.flatten([[1, 2], [3, 4], [5]]), [1, 2, 3, 4, 5]
-        )
+        self.assertEqual(common_utils.unique([1, 2, 2, 3, 1, 4, 2]), [1, 2, 3, 4])
+        self.assertEqual(common_utils.flatten([[1, 2], [3, 4], [5]]), [1, 2, 3, 4, 5])
 
     def test_sign_digits_wrap(self):
         self.assertEqual(common_utils.sign(5), 1)
@@ -193,9 +189,7 @@ class TestCommonUtils(unittest.TestCase):
             common_utils.within_range(5, [(1, 5), (10, 15)], inclusive=False)
         )
 
-        self.assertEqual(
-            common_utils.range_coverage([(1, 3), (5, 7), (2, 6)]), 7
-        )
+        self.assertEqual(common_utils.range_coverage([(1, 3), (5, 7), (2, 6)]), 7)
         self.assertEqual(
             common_utils.range_coverage([(1, 3), (5, 7), (2, 6)], inclusive=False), 5
         )

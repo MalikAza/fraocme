@@ -391,7 +391,9 @@ def range_intersection(
     return None
 
 
-def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
+def merge_ranges(
+    ranges: list[tuple[int, int]], inclusive: bool = True
+) -> list[tuple[int, int]]:
     """
     Merge overlapping/adjacent ranges into non-overlapping ones.
 
@@ -403,8 +405,12 @@ def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
     Example (adjacent ranges):
         ranges = [(1, 5), (6, 10), (20, 25)]
         merge_ranges(ranges)
-        # Returns: [(1, 10), (20, 25)]  # Adjacent 5-6 merged
+        # Returns: [(1, 10), (20, 25)]  # Adjacent 5-6 merged when inclusive=True
 
+    Example (exclusive):
+        ranges = [(1, 5), (6, 10), (20, 25)]
+        merge_ranges(ranges, inclusive=False)
+        # Returns: [(1, 5), (6, 10), (20, 25)]  # No merge since exclusive
     Example (unsorted input):
         ranges = [(10, 15), (1, 5), (3, 8)]
         merge_ranges(ranges)
@@ -415,7 +421,7 @@ def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
     sorted_ranges = sorted(ranges)
     merged = [sorted_ranges[0]]
     for start, end in sorted_ranges[1:]:
-        if start <= merged[-1][1] + 1:
+        if start <= merged[-1][1] + (1 if inclusive else 0):
             merged[-1] = (merged[-1][0], max(merged[-1][1], end))
         else:
             merged.append((start, end))
@@ -474,7 +480,7 @@ def range_coverage(ranges: list[tuple[int, int]], inclusive: bool = True) -> int
         range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], inclusive=False)
         # Returns: 10
     """
-    merged = merge_ranges(ranges)
+    merged = merge_ranges(ranges, inclusive=inclusive)
     total = 0
     for start, end in merged:
         if inclusive:
