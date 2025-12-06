@@ -420,3 +420,63 @@ def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
         else:
             merged.append((start, end))
     return merged
+
+
+def within_range (value: int, ranges: list[tuple[int, int]], inclusive: bool = True)-> bool:
+    """
+    Check if one int is in any of the given ranges.
+
+    Args:
+        ranges: List of ranges as (start, end)
+
+    Returns:
+        Boolean indicating if the int is in any range
+
+    Example:
+        within_range (1, [(1, 5), (3, 7), (10, 15), (14, 20)])
+        # Returns: True
+
+    Example (exclusive):
+        within_range (5, [(1, 5), (6, 10)], inclusive=False)
+        # Returns: False
+
+    Example (contiguous):
+        within_range (7, [(1, 3), (4, 6), (8, 10)])
+        # Returns: False
+    """
+    for start, end in ranges:
+        if inclusive:
+            if start <= value <= end:
+                return True
+        else:
+            if start < value < end:
+                return True
+    return False
+
+
+def range_coverage(ranges: list[tuple[int, int]], inclusive: bool = True) -> int:
+    """
+    Calculate total coverage of ranges.
+
+    Args:
+        ranges: List of ranges as (start, end)
+
+    Returns:
+        Total coverage as int
+
+    Example:
+        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)])
+        # Returns: 14
+
+    Example (exclusive):
+        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], inclusive=False)
+        # Returns: 10
+    """
+    merged = merge_ranges(ranges)
+    total = 0
+    for start, end in merged:
+        if inclusive:
+            total += end - start + 1
+        else:
+            total += end - start - 1
+    return total
