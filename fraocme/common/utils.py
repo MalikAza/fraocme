@@ -422,7 +422,9 @@ def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
     return merged
 
 
-def within_range (value: int, ranges: list[tuple[int, int]], inclusive: bool = True)-> bool:
+def within_range(
+    value: int, ranges: list[tuple[int, int]], inclusive: bool = True
+) -> bool:
     """
     Check if one int is in any of the given ranges.
 

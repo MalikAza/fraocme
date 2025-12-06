@@ -4,7 +4,8 @@ import unittest
 from contextlib import redirect_stdout
 from io import StringIO
 
-from fraocme.common import parser, utils as common_utils
+from fraocme.common import parser
+from fraocme.common import utils as common_utils
 from fraocme.common.printer import (
     print_dict_head,
     print_dict_row,
@@ -12,7 +13,6 @@ from fraocme.common.printer import (
     print_ranges,
     print_row_stats,
 )
-
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
@@ -145,7 +145,9 @@ class TestCommonUtils(unittest.TestCase):
     def test_chunks_windows_pairwise(self):
         data = [1, 2, 3, 4, 5, 6, 7]
         self.assertEqual(common_utils.chunks(data, 3), [[1, 2, 3], [4, 5, 6], [7]])
-        self.assertEqual(common_utils.windows([1, 2, 3, 4], 2), [[1, 2], [2, 3], [3, 4]])
+        self.assertEqual(
+            common_utils.windows([1, 2, 3, 4], 2), [[1, 2], [2, 3], [3, 4]]
+        )
         self.assertEqual(common_utils.pairwise([1, 2, 3, 4]), [(1, 2), (2, 3), (3, 4)])
 
     def test_rotate_unique_flatten(self):
@@ -181,7 +183,8 @@ class TestCommonUtils(unittest.TestCase):
         self.assertIsNone(common_utils.range_intersection((1, 5), (7, 10)))
 
         merged = common_utils.merge_ranges([(10, 15), (1, 5), (3, 8), (16, 18)])
-        self.assertEqual(merged, [(1, 8), (10, 15), (16, 18)])
+
+        self.assertEqual(merged, [(1, 8), (10, 18)])
 
         self.assertTrue(
             common_utils.within_range(5, [(1, 5), (10, 15)], inclusive=True)
