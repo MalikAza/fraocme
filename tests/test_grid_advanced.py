@@ -1,7 +1,7 @@
 """Advanced grid tests: pathfinding, transformations, regions, animations."""
 
-import sys
 import math
+import sys
 import unittest
 from io import StringIO
 
@@ -9,6 +9,15 @@ from fraocme.grid import (
     CARDINALS,
     DIAGONALS,
     Grid,
+)
+from fraocme.grid.directions import (
+    EAST,
+    NORTH,
+    WEST,
+    direction_from_delta,
+    opposite,
+    turn_left,
+    turn_right,
 )
 from fraocme.grid.pathfinding import (
     a_star,
@@ -28,16 +37,6 @@ from fraocme.grid.printer import (
     print_grid_region,
 )
 from fraocme.grid.regions import find_regions, flood_fill
-from fraocme.grid.directions import (
-    EAST,
-    NORTH,
-    SOUTH,
-    WEST,
-    direction_from_delta,
-    opposite,
-    turn_left,
-    turn_right,
-)
 
 
 class TestPathfinding(unittest.TestCase):
