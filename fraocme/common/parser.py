@@ -39,22 +39,6 @@ def ints(raw: str) -> list[int]:
     return [int(line) for line in lines(raw)]
 
 
-def ints_per_line(raw: str, delimiter: str | None = None) -> list[list[int]]:
-    """
-    Parse input as lists of integers per line.
-    (2D grid of single digits.)
-
-    Args:
-        delimiter: Separator between numbers (default: whitespace)
-
-    Example input:
-        123
-        456
-    Returns: [[1,2,3], [4,5,6]]
-    """
-    return [list(map(int, line.split(delimiter))) for line in lines(raw)]
-
-
 def key_ints(raw: str, key_delimiter: str = ": ") -> dict[int, list[int]]:
     """
     Parse input where each line has a key followed by space-separated integers.

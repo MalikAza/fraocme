@@ -6,28 +6,6 @@ T = TypeVar("T")
 
 
 # ─────────────────────────────────────────────────────────
-# Transpose
-# ─────────────────────────────────────────────────────────
-def transpose(data: Sequence[Sequence[int]]) -> tuple[tuple[int, ...], ...]:
-    """
-    Transpose rows into columns.
-
-    Args:
-        data: List of rows (e.g., from ints_per_line)
-
-    Example:
-        data = [[63721, 98916], [83871, 23584], [55026, 62690]]
-        transpose(data)
-        # Returns: ((63721, 83871, 55026), (98916, 23584, 62690))
-
-    Usage with parser:
-        pairs = ints_per_line(raw)
-        left, right = transpose(pairs)
-    """
-    return tuple(zip(*data))
-
-
-# ─────────────────────────────────────────────────────────
 # Frequency/Counting utilities
 # ─────────────────────────────────────────────────────────
 def frequencies(data: Sequence[T]) -> dict[T, int]:

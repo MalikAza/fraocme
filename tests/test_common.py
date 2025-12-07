@@ -109,13 +109,6 @@ class TestCommonParser(unittest.TestCase):
         self.assertEqual(parser.lines(raw), ["1", "2", "-3"])
         self.assertEqual(parser.ints(raw), [1, 2, -3])
 
-    def test_ints_per_line_default_and_delimiter(self):
-        raw = "1 2 3\n4 5 6"
-        self.assertEqual(parser.ints_per_line(raw), [[1, 2, 3], [4, 5, 6]])
-
-        raw_csv = "1,2,3\n4,5,6"
-        self.assertEqual(parser.ints_per_line(raw_csv, ","), [[1, 2, 3], [4, 5, 6]])
-
     def test_key_ints(self):
         raw = "190: 10 19\n83: 17 5"
         self.assertEqual(parser.key_ints(raw), {190: [10, 19], 83: [17, 5]})
@@ -131,10 +124,6 @@ class TestCommonParser(unittest.TestCase):
 
 
 class TestCommonUtils(unittest.TestCase):
-    def test_transpose(self):
-        pairs = [(1, 2), (3, 4), (5, 6)]
-        self.assertEqual(common_utils.transpose(pairs), ((1, 3, 5), (2, 4, 6)))
-
     def test_frequencies_and_all_equal(self):
         data = ["a", "b", "a", "c", "a", "b"]
         self.assertEqual(common_utils.frequencies(data), {"a": 3, "b": 2, "c": 1})

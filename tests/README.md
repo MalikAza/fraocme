@@ -121,13 +121,12 @@ Tests for the `fraocme.grid` module:
   - `int_grid()` - parse 2D grid of single digits
 - **Printer**: Grid display utilities
   - `print_grid()` - display 2D grids with optional highlighting
-- **GridUtils**: Utility class for grid navigation
-  - Position checking: `is_position_out_of_bounds()`
-  - Direction movement: `get_position_up/down/left/right()`
-  - Diagonal movement: `get_position_diagonal()`
-  - Multi-position retrieval: `get_positions_around()`, `get_positions_in_nsew()`, `get_positions_in_corners()`
-  - Value operations: `search_value()`, `get_cell_value()`
-  - Start/end position tracking
+- **Grid Core**: Modern Grid[T] class functionality
+  - Position checking: `in_bounds()`
+  - Direction movement: `move()` with Direction objects
+  - Neighbor queries: `get_neighbors()` with ring support
+  - Value operations: `find()`, `find_first()`, `at()`
+  - Immutable updates: `set()`, `bulk_set()`
 
 ### `test_profiling.py`
 Tests for the `fraocme.profiling` module:
