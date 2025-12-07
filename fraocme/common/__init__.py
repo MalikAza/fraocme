@@ -1,4 +1,4 @@
-from .parser import ints, ints_per_line, key_ints, lines, mapped, ranges, sections
+from .parser import ints, key_ints, lines, mapped, ranges, sections
 from .printer import (
     print_dict_head,
     print_dict_row,
@@ -22,7 +22,6 @@ from .utils import (
     ranges_overlap,
     rotate,
     sign,
-    transpose,
     unique,
     windows,
     wrap,
@@ -32,11 +31,9 @@ __all__ = [
     "sections",
     "lines",
     "ints",
-    "ints_per_line",
     "key_ints",
     "ranges",
     "mapped",
-    "transpose",
     "frequencies",
     "all_equal",
     "chunks",
