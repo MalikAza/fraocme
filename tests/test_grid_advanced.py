@@ -7,11 +7,6 @@ from io import StringIO
 from fraocme.grid import (
     CARDINALS,
     DIAGONALS,
-    EAST,
-    NORTH,
-    NORTHEAST,
-    SOUTH,
-    WEST,
     Grid,
 )
 from fraocme.grid.pathfinding import (
@@ -31,7 +26,7 @@ from fraocme.grid.printer import (
     print_grid_path,
     print_grid_region,
 )
-from fraocme.grid.regions import flood_fill, find_regions
+from fraocme.grid.regions import find_regions, flood_fill
 
 
 class TestPathfinding(unittest.TestCase):
@@ -40,9 +35,7 @@ class TestPathfinding(unittest.TestCase):
     def setUp(self):
         """Create test grids."""
         # Simple 5x5 maze (all rows same length)
-        self.maze = Grid.from_chars(
-            "S....\n#.###\n.....\n###..\n...#E"
-        )
+        self.maze = Grid.from_chars("S....\n#.###\n.....\n###..\n...#E")
 
     def test_manhattan_distance(self):
         """Test Manhattan distance calculation."""
@@ -77,7 +70,11 @@ class TestPathfinding(unittest.TestCase):
         start = grid.find_first("S")
         end = grid.find_first("E")
         path = bfs(
-            grid, start, end, is_walkable=lambda pos, val: val != "#", directions=CARDINALS
+            grid,
+            start,
+            end,
+            is_walkable=lambda pos, val: val != "#",
+            directions=CARDINALS,
         )
         self.assertIsNone(path)
 
