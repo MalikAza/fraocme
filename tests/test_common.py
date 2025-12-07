@@ -185,6 +185,12 @@ class TestCommonUtils(unittest.TestCase):
             common_utils.range_coverage([(1, 3), (5, 7), (2, 6)], inclusive=False), 5
         )
 
+    def test_merge_ranges_empty(self):
+        self.assertEqual(common_utils.merge_ranges([], inclusive=True), [])
+
+    def test_within_range_exclusive_hit(self):
+        self.assertTrue(common_utils.within_range(5, [(4, 6)], inclusive=False))
+
 
 class TestCommonPrinterExtras(unittest.TestCase):
     def test_print_row_stats_empty_and_basic(self):
