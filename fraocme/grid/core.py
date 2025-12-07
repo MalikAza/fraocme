@@ -352,4 +352,3 @@ class Grid(Generic[T]):
             f"Grid[{type_name}]({self.width}x{self.height}) "
             f"(use fraocme.grid.printer for details)"
         )
-
