@@ -391,6 +391,20 @@ class TestCreateCommand(unittest.TestCase):
 
             shutil.rmtree(self.test_day_dir)
 
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up the entire days directory after all tests complete."""
+        import shutil
+
+        days_dir = Path.cwd() / "days"
+        if days_dir.exists():
+            try:
+                # Check if directory is empty (only contains this test's artifacts)
+                if not any(days_dir.iterdir()):
+                    shutil.rmtree(days_dir)
+            except OSError:
+                pass  # Directory might have files being used
+
     def test_create_command_creates_directory(self):
         """Test that create command creates the day directory."""
         args = MagicMock()
@@ -572,61 +586,89 @@ class TestCreateCommand(unittest.TestCase):
 
     def test_create_command_validates_day_range_lower_bound(self):
         """Test that create command rejects day 0."""
-        args = MagicMock()
-        args.day = 0
+        test_day_dir = Path.cwd() / "days" / "day_00"
+        try:
+            args = MagicMock()
+            args.day = 0
 
-        output = StringIO()
-        with patch("sys.stdout", output):
-            with patch("sys.exit") as mock_exit:
-                cmd_create(args)
-                mock_exit.assert_called_once_with(1)
+            output = StringIO()
+            with patch("sys.stdout", output):
+                with patch("sys.exit") as mock_exit:
+                    cmd_create(args)
+                    mock_exit.assert_called_once_with(1)
 
-        output_text = output.getvalue()
-        self.assertIn("Error:", output_text)
-        self.assertIn("must be between 1 and 25", output_text)
+            output_text = output.getvalue()
+            self.assertIn("Error:", output_text)
+            self.assertIn("must be between 1 and 25", output_text)
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
     def test_create_command_validates_day_range_upper_bound(self):
         """Test that create command rejects day 26."""
-        args = MagicMock()
-        args.day = 26
+        test_day_dir = Path.cwd() / "days" / "day_26"
+        try:
+            args = MagicMock()
+            args.day = 26
 
-        output = StringIO()
-        with patch("sys.stdout", output):
-            with patch("sys.exit") as mock_exit:
-                cmd_create(args)
-                mock_exit.assert_called_once_with(1)
+            output = StringIO()
+            with patch("sys.stdout", output):
+                with patch("sys.exit") as mock_exit:
+                    cmd_create(args)
+                    mock_exit.assert_called_once_with(1)
 
-        output_text = output.getvalue()
-        self.assertIn("Error:", output_text)
-        self.assertIn("must be between 1 and 25", output_text)
+            output_text = output.getvalue()
+            self.assertIn("Error:", output_text)
+            self.assertIn("must be between 1 and 25", output_text)
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
     def test_create_command_validates_negative_day(self):
         """Test that create command rejects negative day numbers."""
-        args = MagicMock()
-        args.day = -5
+        test_day_dir = Path.cwd() / "days" / "day_-5"
+        try:
+            args = MagicMock()
+            args.day = -5
 
-        output = StringIO()
-        with patch("sys.stdout", output):
-            with patch("sys.exit") as mock_exit:
-                cmd_create(args)
-                mock_exit.assert_called_once_with(1)
+            output = StringIO()
+            with patch("sys.stdout", output):
+                with patch("sys.exit") as mock_exit:
+                    cmd_create(args)
+                    mock_exit.assert_called_once_with(1)
 
-        output_text = output.getvalue()
-        self.assertIn("Error:", output_text)
+            output_text = output.getvalue()
+            self.assertIn("Error:", output_text)
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
     def test_create_command_validates_large_day(self):
         """Test that create command rejects very large day numbers."""
-        args = MagicMock()
-        args.day = 100
+        test_day_dir = Path.cwd() / "days" / "day_100"
+        try:
+            args = MagicMock()
+            args.day = 100
 
-        output = StringIO()
-        with patch("sys.stdout", output):
-            with patch("sys.exit") as mock_exit:
-                cmd_create(args)
-                mock_exit.assert_called_once_with(1)
+            output = StringIO()
+            with patch("sys.stdout", output):
+                with patch("sys.exit") as mock_exit:
+                    cmd_create(args)
+                    mock_exit.assert_called_once_with(1)
 
-        output_text = output.getvalue()
-        self.assertIn("Error:", output_text)
+            output_text = output.getvalue()
+            self.assertIn("Error:", output_text)
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
     def test_create_command_accepts_valid_range(self):
         """Test that create command accepts all valid day numbers."""
