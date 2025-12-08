@@ -448,7 +448,7 @@ class TestCreateCommand(unittest.TestCase):
         content = solution_file.read_text()
 
         self.assertIn("class Day12(Solver):", content)
-        init_sig = "def __init__(self, day: int = 12, debug: bool = False):"
+        init_sig = "def __init__(self, day: int = 12, **kwargs):"
         self.assertIn(init_sig, content)
 
     def test_create_command_solution_has_parse_method(self):
@@ -683,6 +683,83 @@ class TestCreateCommand(unittest.TestCase):
             if test_day_dir.exists():
                 import shutil
 
+                shutil.rmtree(test_day_dir)
+
+    def test_create_command_solution_accepts_kwargs(self):
+        """Test that generated solution accepts **kwargs for Solver parameters."""
+        import shutil
+
+        args = MagicMock()
+        args.day = 15
+        test_day_dir = Path.cwd() / "days" / "day_15"
+
+        try:
+            with patch("sys.stdout", new=StringIO()):
+                cmd_create(args)
+
+            solution_file = test_day_dir / "solution.py"
+            content = solution_file.read_text()
+
+            # Verify it uses **kwargs instead of explicit parameters
+            self.assertIn("def __init__(self, day: int = 15, **kwargs):", content)
+            self.assertIn("super().__init__(day=day, **kwargs)", content)
+            # Ensure old hardcoded parameters are not present
+            self.assertNotIn("debug=debug", content)
+            self.assertNotIn("copy_input=True", content)
+        finally:
+            if test_day_dir.exists():
+                shutil.rmtree(test_day_dir)
+
+    def test_create_command_solution_is_instantiable_with_kwargs(self):
+        """Test that generated solution can be instantiated with various kwargs."""
+        import importlib.util
+        import shutil
+
+        args = MagicMock()
+        args.day = 17
+        test_day_dir = Path.cwd() / "days" / "day_17"
+
+        try:
+            with patch("sys.stdout", new=StringIO()):
+                cmd_create(args)
+
+            solution_file = test_day_dir / "solution.py"
+            self.assertTrue(solution_file.exists())
+
+            # Import the generated module
+            spec = importlib.util.spec_from_file_location(
+                "day_17_solution", solution_file
+            )
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            # Instantiate with no extra kwargs
+            solver1 = module.Day17()
+            self.assertEqual(solver1.day, 17)
+
+            # Instantiate with debug kwarg
+            solver2 = module.Day17(debug=True)
+            self.assertEqual(solver2.debug_enabled, True)
+
+            # Instantiate with show_traceback kwarg
+            solver3 = module.Day17(show_traceback=False)
+            self.assertEqual(solver3.show_traceback, False)
+
+            # Instantiate with all kwargs that Solver accepts
+            solver4 = module.Day17(
+                day=17,
+                debug=True,
+                show_traceback=False,
+                copy_input=False,
+                use_example=True,
+            )
+            self.assertEqual(solver4.day, 17)
+            self.assertEqual(solver4.debug_enabled, True)
+            self.assertEqual(solver4.show_traceback, False)
+            self.assertEqual(solver4.copy_input, False)
+            self.assertEqual(solver4.use_example, True)
+        finally:
+            if test_day_dir.exists():
                 shutil.rmtree(test_day_dir)
 
 

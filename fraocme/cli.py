@@ -184,8 +184,8 @@ def cmd_create(args):
 
 
 class {day_class_name}(Solver):
-    def __init__(self, day: int = {day_num}, debug: bool = False):
-        super().__init__(day=day, debug=debug, copy_input=True)
+    def __init__(self, day: int = {day_num}, **kwargs):
+        super().__init__(day=day, **kwargs)
 
     def parse(self, raw: str):
         """Parse the input data."""
