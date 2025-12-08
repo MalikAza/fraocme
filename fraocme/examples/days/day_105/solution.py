@@ -10,10 +10,7 @@ from fraocme.grid.printer import print_grid_region
 from fraocme.ui.colors import c
 
 
-class Day5(Solver):
-    def __init__(self, day: int = 5, debug: bool = False):
-        super().__init__(day=day, debug=debug, copy_input=True)
-
+class Day105(Solver):
     def parse(self, raw: str) -> Grid[str]:
         """Parse the input into a grid."""
         return Grid.from_chars(raw)

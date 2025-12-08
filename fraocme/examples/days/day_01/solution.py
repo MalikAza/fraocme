@@ -1,173 +1,110 @@
 """
-Day 1 Example: Grid Navigation with Modern Direction System
+Day 01 Example: Parser Functions
 
-This example demonstrates the new Grid module features:
-- Parsing grids with Grid.from_chars()
-- Finding positions with grid.find()
-- Moving with Direction objects (NORTH, SOUTH, EAST, WEST)
-- Using turn_left() and turn_right()
-- Tracking visited positions
+Demonstrates all common parser functions from fraocme.common.parser:
+- sections() - Parse blocks separated by blank lines
+- lines() - Parse as list of strings
+- ints() - Parse as list of integers
+- char_lines() - Parse digits per line
+- key_ints() - Parse key-value pairs
+- ranges() - Parse integer ranges
+- mapped() - Custom line parser
 """
 
 from fraocme import Solver
-from fraocme.grid import (
-    NORTH,
-    Grid,
-    turn_right,
+from fraocme.common.parser import (
+    char_lines,
+    ints,
+    key_ints,
+    lines,
+    mapped,
+    ranges,
+    sections,
 )
+from fraocme.common.printer import print_dict_head, print_ranges, print_row_stats
 from fraocme.ui.colors import c
 
 
 class Day1(Solver):
-    def __init__(self, day: int = 1, debug: bool = False):
-        super().__init__(day=day, debug=debug, copy_input=True)
+    def parse(self, raw: str) -> str:
+        """Keep raw input for demonstration purposes."""
+        return raw
 
-    def parse(self, raw: str) -> Grid[str]:
-        """Parse the input into a Grid."""
-        return Grid.from_chars(raw)
-
-    def part1(self, grid: Grid[str]) -> int:
+    def part1(self, raw: str) -> int:
         """
-        Simulate guard movement on a grid.
-
-        Rules:
-        - Guard starts at '^' facing NORTH
-        - If obstacle '#' ahead, turn right 90°
-        - Otherwise, move forward
-        - Count distinct positions visited
+        Demonstrate basic parser functions.
         """
-        # Find starting position
-        start = grid.find_first("^")
-        if not start:
-            return 0
+        self.debug(c.bold("\n=== Part 1: Basic Parsers ===\n"))
 
-        self.debug(c.cyan(f"Starting at: {start}"))
-        self.debug(f"Grid dimensions: {grid.dimensions}")
+        # 1. sections() - Parse blocks separated by blank lines
+        self.debug(c.cyan("1. sections() - Parse blocks:"))
+        blocks = sections(raw)
+        self.debug(f"   Found {len(blocks)} blocks")
+        for i, block in enumerate(blocks[:2]):
+            self.debug(f"   Block {i}: {block[:50]}...")
 
-        # Track state
-        pos = start
-        direction = NORTH
-        visited = {pos}
+        # 2. lines() - Parse each line as string
+        self.debug(c.cyan("\n2. lines() - Parse lines:"))
+        all_lines = lines(blocks[0])
+        self.debug(f"   Block 0 has {len(all_lines)} lines")
+        self.debug(f"   First line: {all_lines[0]}")
 
-        # Simulate movement
-        steps = 0
-        while True:
-            steps += 1
+        # 3. ints() - Parse integers (one per line)
+        self.debug(c.cyan("\n3. ints() - Parse integers:"))
+        numbers_text = blocks[1]
+        numbers = ints(numbers_text)
+        self.debug(f"   Parsed {len(numbers)} numbers")
+        self.debug(lambda: print_row_stats(numbers))
 
-            # Try to move forward
-            next_pos = grid.neighbor(pos, direction)
+        # 4. char_lines() - Parse digits per line
+        self.debug(c.cyan("\n4. char_lines() - Parse digit lines:"))
+        digit_text = blocks[2]
+        digit_rows = char_lines(digit_text, as_int=True)
+        self.debug(f"   Parsed {len(digit_rows)} rows of digits")
+        self.debug(f"   Row 0: {digit_rows[0][:10]}...")
+        self.debug(f"   Row 1: {digit_rows[1][:10]}...")
 
-            # Check if we left the grid
-            if next_pos is None:
-                self.debug(c.yellow(f"Left grid after {steps} steps"))
-                break
+        return sum(numbers)
 
-            # Check what's at the next position
-            next_cell = grid.at(*next_pos)
-
-            if next_cell == "#":
-                # Obstacle ahead - turn right
-                direction = turn_right(direction)
-                self.debug(
-                    c.muted(f"Obstacle at {next_pos}, turning to {direction.name}")
-                )
-            else:
-                # Move forward
-                pos = next_pos
-                visited.add(pos)
-
-                if steps % 100 == 0:
-                    self.debug(
-                        c.muted(f"Step {steps}: visited {len(visited)} positions")
-                    )
-
-            # Safety check to prevent infinite loops
-            if steps > 10000:
-                self.debug(c.red("Safety limit reached!"))
-                break
-
-        result = len(visited)
-        self.debug(c.green(f"Distinct positions visited: {result}"))
-        return result
-
-    def part2(self, grid: Grid[str]) -> int:
+    def part2(self, raw: str) -> int:
         """
-        Find positions where adding an obstacle creates a loop.
-
-        Strategy:
-        - Try placing obstacle at each empty position
-        - Simulate guard movement
-        - Detect loops by tracking (position, direction) states
-        - Count positions that cause loops
+        Demonstrate advanced parser functions.
         """
-        start = grid.find_first("^")
-        if not start:
-            return 0
+        self.debug(c.bold("\n=== Part 2: Advanced Parsers ===\n"))
 
-        # Get all empty positions (excluding start)
-        empty_positions = [pos for pos in grid.filter_positions(lambda p, v: v == ".")]
+        blocks = sections(raw)
 
-        self.debug(c.cyan(f"Testing {len(empty_positions)} positions for loops"))
+        # 5. key_ints() - Parse key-value pairs
+        self.debug(c.cyan("5. key_ints() - Parse key-value pairs:"))
+        equations_text = blocks[3]
+        equations = key_ints(equations_text, key_delimiter=": ")
+        self.debug(f"   Parsed {len(equations)} equations")
+        self.debug(lambda: print_dict_head(equations, n=3))
 
-        loop_count = 0
+        # 6. ranges() - Parse integer ranges
+        self.debug(c.cyan("\n6. ranges() - Parse ranges:"))
+        range_text = blocks[4].strip()
+        parsed_ranges = ranges(range_text, range_delimiter="-", entry_delimiter=",")
+        self.debug(f"   Parsed {len(parsed_ranges)} ranges")
+        self.debug(lambda: print_ranges(parsed_ranges, head=5, tail=2))
 
-        for test_idx, obstacle_pos in enumerate(empty_positions):
-            # Create new grid with obstacle
-            test_grid = grid.set(*obstacle_pos, "#")
+        # 7. mapped() - Custom line parser
+        self.debug(c.cyan("\n7. mapped() - Custom parser:"))
+        coord_text = blocks[5]
 
-            # Simulate movement with loop detection
-            if self._creates_loop(test_grid, start):
-                loop_count += 1
+        def parse_coord(line: str) -> tuple[int, int]:
+            parts = line.split(",")
+            return (int(parts[0]), int(parts[1]))
 
-            # Progress update
-            if (test_idx + 1) % 100 == 0:
-                self.debug(
-                    c.muted(
-                        f"Tested {test_idx + 1}/{len(empty_positions)}, "
-                        f"found {loop_count} loops"
-                    )
-                )
+        coords = mapped(coord_text, parse_coord)
+        self.debug(f"   Parsed {len(coords)} coordinates")
+        self.debug(f"   First 3: {coords[:3]}")
+        self.debug(f"   Last 3: {coords[-3:]}")
 
-        self.debug(c.green(f"Positions causing loops: {loop_count}"))
-        return loop_count
+        # Calculate result based on equations
+        total = 0
+        for key, values in equations.items():
+            if sum(values) == key or (len(values) > 1 and values[0] * values[1] == key):
+                total += key
 
-    def _creates_loop(self, grid: Grid[str], start: tuple[int, int]) -> bool:
-        """Check if guard gets stuck in a loop on this grid."""
-        pos = start
-        direction = NORTH
-
-        # Track (position, direction) states to detect loops
-        states = {(pos, direction)}
-
-        steps = 0
-        max_steps = 10000  # Safety limit
-
-        while steps < max_steps:
-            steps += 1
-
-            # Try to move forward
-            next_pos = grid.neighbor(pos, direction)
-
-            # If we left the grid, no loop
-            if next_pos is None:
-                return False
-
-            # Check what's ahead
-            next_cell = grid.at(*next_pos)
-
-            if next_cell == "#":
-                # Turn right at obstacle
-                direction = turn_right(direction)
-            else:
-                # Move forward
-                pos = next_pos
-
-            # Check if we've been in this state before
-            state = (pos, direction)
-            if state in states:
-                return True  # Loop detected!
-
-            states.add(state)
-
-        # Safety limit reached - assume it's a loop
-        return True
+        return total

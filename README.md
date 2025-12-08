@@ -1,99 +1,144 @@
-# Fraocme
+# 🎄 Fraocme
 
 [![Tests](https://github.com/MalikAza/fraocme/actions/workflows/test.yml/badge.svg)](https://github.com/MalikAza/fraocme/actions/workflows/test.yml)
 [![Lint](https://github.com/MalikAza/fraocme/actions/workflows/lint.yml/badge.svg)](https://github.com/MalikAza/fraocme/actions/workflows/lint.yml)
 [![Format](https://github.com/MalikAza/fraocme/actions/workflows/format.yml/badge.svg)](https://github.com/MalikAza/fraocme/actions/workflows/format.yml)
 [![codecov](https://codecov.io/gh/MalikAza/fraocme/branch/main/graph/badge.svg)](https://codecov.io/gh/MalikAza/fraocme)
 
-A compact, testable framework for writing Advent of Code solutions in Python.
+> *Your cozy companion for solving Advent of Code puzzles in Python* ☕✨
 
-**Goals:** simple project layout, helpful debug utilities, and reproducible timing/stats.
+Fraocme is a lightweight framework that makes tackling those December coding challenges a breeze. Think clean project structure, helpful debugging tools, and automated timing—all wrapped up like a present under the tree.
 
-**Install (editable)**
+**What's Inside:**
+- 🎁 Simple project scaffolding
+- 🐛 Smart debug utilities
+- ⏱️ Performance tracking & stats
+- 🎨 Pretty output formatting
+
+## 🎅 Installation
 
 ```bash
 pip install -e .
 ```
 
-**Tests**
+## 🚀 Quick Start
 
-```bash
-python -m unittest discover -v tests/
-```
-or
-```bash
-uv run test
-```
+Get unwrapping your first puzzle in seconds:
 
-**Quick Start**
-
-1. Create a day folder with template files:
+1. **Create** a new day solution:
    ```bash
    fraocme create 1
    ```
-2. Edit the generated `days/day_01/solution.py` and implement `part1` and `part2` methods.
-3. Add your puzzle input to `days/day_01/input.txt`.
-4. Run it with the CLI: `fraocme run 1`.
+   
+2. **Edit** `days/day_01/solution.py` and implement your `parse`, `part1`, and `part2` methods.
 
-Example `Day0` (compact):
+3. **Add** your puzzle input to `days/day_01/input.txt`.
+
+4. **Run** it:
+   ```bash
+   fraocme run 1
+   ```
+
+That's it! 🎉
+
+## 📝 Example Solution
+
+Here's what a typical solution looks like:
 
 ```python
 from fraocme import Solver
-from fraocme.debug.printer import print_max_in_rows
-from fraocme.parsers import int_grid
+from fraocme.common.parser import char_lines
 
-class Day0(Solver):
-    def __init__(self, debug: bool = False):
-        super().__init__(day=0, debug=debug, copy_input=True)
-
+class Day1(Solver):
     def parse(self, raw: str) -> list[list[int]]:
-        # Example parser: convert input to a grid of integers
-        return int_grid(raw)
+        # Parse each line into individual digits
+        return char_lines(raw)
 
     def part1(self, data: list[list[int]]) -> int:
-        # Example: only run the pretty-print helper when --debug is used
-        self.debug(lambda: print_max_in_rows(data))
+        # Use debug helpers during development
+        self.debug("Processing", len(data), "lines")
         return sum(max(line) for line in data)
 
     def part2(self, data: list[list[int]]) -> int:
         return sum(sum(line) for line in data)
 ```
 
-Notes:
-- Use `--debug` to enable debug prints; passing callables like `lambda: ...` avoids
-  evaluating expensive debug helpers when debug is disabled.
-- `copy_input=True` makes `load()` return a deep copy so multiple parts won't mutate
-  the same data instance.
+**Pro Tips:**
+- 🐛 Pass callables to `self.debug(lambda: expensive_function())` to avoid computing debug output when not needed
+- 📋 The base `Solver` automatically handles input copying, so parts don't interfere with each other
 
-**CLI Overview**
+## 🎮 Command Line Interface
 
-- **Create** a new day solution:
-  ```bash
-  fraocme create <day>  # Creates days/day_XX/ with solution.py and input.txt
-                        # Day must be between 1 and 25
-  ```
-- **Run** solutions:
-  ```bash
-  fraocme run <day>          # Run a specific day
-  fraocme run 1 -p 1         # Run only part 1
-  fraocme run 1 --debug      # Run with debug output
-  fraocme run --all          # Run all days
-  ```
-- **View** statistics:
-  ```bash
-  fraocme stats              # Show all stats
-  fraocme stats 1            # Show stats for day 1
-  fraocme stats --best       # Show only best times
-  ```
-
-**Parsers & Utilities**
-
-Import useful parsers from `fraocme.parsers` (examples):
-
-```python
-from fraocme.parsers import int_grid, lines, ints, blocks
+### Creating Solutions
+```bash
+fraocme create <day>           # Creates days/day_XX/ with solution.py and input.txt
+                               # Day must be between 1 and 25 (for those calendar dates!)
 ```
 
+### Running Solutions
+```bash
+fraocme run <day>              # Run a specific day
+fraocme run 1 -p 1             # Run only part 1
+fraocme run 1 --debug          # Run with debug output enabled
+fraocme run 1 --no-traceback   # Hide tracebacks on errors (cleaner output)
+fraocme run --all              # Run all days (marathon mode! 🏃)
+```
+
+### Viewing Statistics
+```bash
+fraocme stats                  # Show all stats
+fraocme stats 1                # Show stats for day 1
+## 🎁 Parsers & Utilities
+
+Common parsing patterns are built right in:
+
+```python
+from fraocme.common.parser import (
+    lines,      # Split into lines
+    ints,       # Parse integers (one per line)
+    digits,     # Parse digits into lists [[1,2,3], [4,5,6]]
+    sections,   # Split by blank lines
+## 🐛 Debugging
+
+Enable debug output with the `--debug` flag:
+
+```python
+self.debug("Current value:", x)
+self.debug(lambda: expensive_visualization(grid))  # Only computed when --debug is used
+```
+
+**Available Debug Helpers:**
+```python
+from fraocme.common.printer import (
+    print_dict_row,      # Pretty-print dictionaries
+    print_ranges,        # Show range summaries
+## 🧪 Testing
+
+```bash
+python -m unittest discover -v tests/
+# or with uv:
+uv run test
+```
+
+See [tests/README.md](tests/README.md) for more details on test organization.
+
+## ✨ Code Quality
+
+Keep your code as clean as fresh snow with [Ruff](https://github.com/astral-sh/ruff):
+
+```bash
+uv run ruff check .        # Check for issues
+uv run ruff format .       # Format code
+uv run ruff check --fix .  # Auto-fix what we can
+```
+
+## 🎄 Happy Coding!
+
+May your solutions be elegant, your bugs be few, and your stars be plentiful! ⭐⭐
+
+---
+
+*Built with ❤️ for Advent of Code enthusiasts*
 There is also a `Grid` class and helpers for points/directions used in grid-style puzzles.
 
 **Debugging**
@@ -130,6 +175,3 @@ uv run ruff check --fix .
 See [tests/README.md](tests/README.md) for test organization and running tests.
 
 ---
-
-# TODO: all the tests...
-# TODO: check __init__.py for missing imports (or extra ones)

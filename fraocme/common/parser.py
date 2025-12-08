@@ -39,6 +39,30 @@ def ints(raw: str) -> list[int]:
     return [int(line) for line in lines(raw)]
 
 
+def char_lines(raw: str, as_int: bool = True) -> list[list[int]] | list[list[str]]:
+    """
+    Parse input where each line is converted to a list of individual digits.
+    Use if all rows haven't the same length.
+    Prefer Grid.from_digits() if all rows have the same length.
+
+    Args:
+        as_int: If True, returns integers; if False, returns strings (default: True)
+
+    Example input:
+        1234521
+        67890
+        11111
+    Returns (as_int=True): [[1, 2, 3, 4, 5, 2, 1], [6, 7, 8, 9, 0],
+        [1, 1, 1, 1, 1]]
+    Returns (as_int=False):
+        [['1', '2', '3', '4', '5', '2', '1',],
+        ['6', '7', '8', '9', '0'], ['1', '1', '1', '1', '1']]
+    """
+    if as_int:
+        return [[int(digit) for digit in line] for line in lines(raw)]
+    return [[digit for digit in line] for line in lines(raw)]
+
+
 def key_ints(raw: str, key_delimiter: str = ": ") -> dict[int, list[int]]:
     """
     Parse input where each line has a key followed by space-separated integers.

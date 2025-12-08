@@ -1,132 +1,135 @@
 """
-Day 3 Example: Animated Grid Visualization
+Day 03 Example: Numeric Utility Functions
 
-Demonstrates grid animation functions for visualizing movement and simulations.
+Demonstrates numeric functions from fraocme.common.utils:
+- sign() - Get sign of number (-1, 0, 1)
+- digits() - Extract digits from integer
+- from_digits() - Combine digits into integer
+- wrap() - Wrap value into range
+- divisors() - Get all divisors
+- gcd() - Greatest common divisor
+- lcm() - Least common multiple
 """
 
 from fraocme import Solver
-from fraocme.grid import NORTH, Grid, turn_right
-from fraocme.grid.printer import (
-    print_grid_animated,
-    print_grid_animated_with_direction,
+from fraocme.common.parser import ints, sections
+from fraocme.common.utils import (
+    digits,
+    divisors,
+    from_digits,
+    gcd,
+    lcm,
+    sign,
+    wrap,
 )
 from fraocme.ui.colors import c
 
 
 class Day3(Solver):
-    def __init__(self, day: int = 3, debug: bool = False):
-        super().__init__(day=day, debug=debug, copy_input=True)
+    def parse(self, raw: str) -> list[str]:
+        """Parse into sections for demonstration."""
+        return sections(raw)
 
-    def parse(self, raw: str) -> Grid[str]:
-        """Parse the input into a grid."""
-        return Grid.from_chars(raw)
-
-    def simulate_patrol(self, grid: Grid[str]) -> tuple[list[tuple[int, int]], list]:
+    def part1(self, data: list[str]) -> int:
         """
-        Simulate guard patrol and return positions + directions.
+        Demonstrate basic numeric utilities.
         """
-        start = grid.find_first("^")
-        if not start:
-            return [], []
+        self.debug(c.bold("\n=== Part 1: Basic Numeric Utilities ===\n"))
 
-        position = start
-        direction = NORTH
-        positions = [position]
-        directions = [direction]
-        visited = {(position, direction)}
+        # 1. sign() - Get sign of number
+        self.debug(c.cyan("1. sign() - Get sign of number:"))
+        test_numbers = [42, -17, 0, 100, -5]
+        for num in test_numbers:
+            s = sign(num)
+            color = c.green if s > 0 else (c.red if s < 0 else c.yellow)
+            self.debug(f"   sign({num:4d}) = {color(str(s))}")
 
-        steps = 0
-        max_steps = 100  # Limit for demo
+        self.debug(c.muted("\n   Use case: Moving toward target"))
+        current, target = 10, 3
+        step = sign(target - current)
+        step_str = c.red(str(step))
+        self.debug(f"   Current: {current}, Target: {target} → step: {step_str}")
 
-        while steps < max_steps:
-            steps += 1
-            next_pos = grid.neighbor(position, direction)
+        # 2. digits() - Extract digits
+        self.debug(c.cyan("\n2. digits() - Extract digits:"))
+        numbers = ints(data[0])
+        for num in numbers[:3]:
+            d = digits(num)
+            self.debug(f"   digits({num}) = {d}")
 
-            # Check if out of bounds
-            if next_pos is None:
-                break
+        # 3. from_digits() - Combine digits
+        self.debug(c.cyan("\n3. from_digits() - Combine digits:"))
+        digit_list = [9, 8, 7, 6, 5]
+        combined = from_digits(digit_list)
+        self.debug(f"   from_digits({digit_list}) = {c.green(str(combined))}")
 
-            # Check for obstacle
-            if grid.at(*next_pos) == "#":
-                # Turn right at obstacle
-                direction = turn_right(direction)
-                directions.append(direction)
-                positions.append(position)
-            else:
-                # Move forward
-                position = next_pos
-                positions.append(position)
-                directions.append(direction)
+        # Round-trip example
+        original = 12345
+        d = digits(original)
+        back = from_digits(d)
+        self.debug(f"   Round-trip: {original} → {d} → {c.green(str(back))}")
 
-            # Check for loop
-            state = (position, direction)
-            if state in visited:
-                break
-            visited.add(state)
+        # 4. wrap() - Wrap into range
+        self.debug(c.cyan("\n4. wrap() - Wrap value into range:"))
+        examples = [(105, 100), (-10, 100), (50, 100), (250, 100)]
+        for value, size in examples:
+            wrapped = wrap(value, size)
+            self.debug(f"   wrap({value:4d}, {size}) = {c.green(str(wrapped))}")
 
-        return positions, directions
+        # Sum of digit sums
+        result = sum(sum(digits(n)) for n in numbers)
+        return result
 
-    def part1(self, grid: Grid[str]) -> int:
+    def part2(self, data: list[str]) -> int:
         """
-        Demonstrate basic animation (position only).
+        Demonstrate advanced numeric utilities.
         """
-        self.debug(c.bold("\n=== Part 1: Basic Animation ===\n"))
+        self.debug(c.bold("\n=== Part 2: Advanced Numeric Utilities ===\n"))
 
-        # Simulate patrol
-        positions, _ = self.simulate_patrol(grid)
-        self.debug(c.cyan(f"Simulated {len(positions)} steps"))
+        # 5. divisors() - Get all divisors
+        self.debug(c.cyan("5. divisors() - Find all divisors:"))
+        test_nums = [12, 28, 100, 17]
+        for num in test_nums:
+            divs = divisors(num)
+            self.debug(f"   divisors({num:3d}) = {divs}")
+            is_prime = len(divs) == 2
+            if is_prime:
+                self.debug(f"              → {c.green('Prime!')}")
 
-        # Show animation (first 30 steps for speed)
-        if len(positions) > 0:
-            self.debug(c.yellow("\nAnimating patrol (basic mode)..."))
-            self.debug(c.dim("Press Ctrl+C to stop\n"))
+        # 6. gcd() - Greatest common divisor
+        self.debug(c.cyan("\n6. gcd() - Greatest common divisor:"))
+        pairs = [(12, 8), (24, 36), (15, 25)]
+        for a, b in pairs:
+            result = gcd(a, b)
+            self.debug(f"   gcd({a}, {b}) = {c.green(str(result))}")
 
-            # Short delay to let user read
-            import time
+        # Multiple numbers
+        nums = [24, 36, 48]
+        result = gcd(*nums)
+        self.debug(f"   gcd({', '.join(map(str, nums))}) = {c.green(str(result))}")
 
-            time.sleep(1)
+        # Simplify fraction example
+        self.debug(c.muted("\n   Use case: Simplify fraction"))
+        numerator, denominator = 15, 25
+        divisor = gcd(numerator, denominator)
+        simplified = (numerator // divisor, denominator // divisor)
+        self.debug(f"   {numerator}/{denominator} → {simplified[0]}/{simplified[1]}")
 
-            # Animate with trail
-            print_grid_animated(
-                grid,
-                positions[:30],  # First 30 steps
-                delay=0.1,  # 100ms per frame
-                trail_length=5,  # Show last 5 positions
-                separator=" ",
-                show_coords=True,
-            )
+        # 7. lcm() - Least common multiple
+        self.debug(c.cyan("\n7. lcm() - Least common multiple:"))
+        pairs = [(4, 6), (3, 7), (12, 18)]
+        for a, b in pairs:
+            result = lcm(a, b)
+            self.debug(f"   lcm({a}, {b}) = {c.green(str(result))}")
 
-        return len(set(positions))
+        # Multiple numbers
+        cycles = [3, 4, 5]
+        result = lcm(*cycles)
+        self.debug(f"   lcm({', '.join(map(str, cycles))}) = {c.green(str(result))}")
 
-    def part2(self, grid: Grid[str]) -> int:
-        """
-        Demonstrate directional animation (with arrows).
-        """
-        self.debug(c.bold("\n=== Part 2: Directional Animation ===\n"))
+        self.debug(c.muted("\n   Use case: Cycle alignment"))
+        cycle_periods = ints(data[1])
+        aligned = lcm(*cycle_periods)
+        self.debug(f"   Cycles {cycle_periods} align at: {c.green(str(aligned))}")
 
-        # Simulate patrol
-        positions, directions = self.simulate_patrol(grid)
-        self.debug(c.cyan(f"Simulated {len(positions)} steps"))
-
-        # Show animation with directional arrows
-        if len(positions) > 0:
-            self.debug(c.yellow("\nAnimating with directional arrows..."))
-            self.debug(c.dim("Press Ctrl+C to stop\n"))
-
-            # Short delay
-            import time
-
-            time.sleep(1)
-
-            # Animate with directions
-            print_grid_animated_with_direction(
-                grid,
-                positions[:300],  # First 30 steps
-                directions[:300],
-                delay=0.1,  # 100ms per frame
-                trail_length=8,  # Longer trail
-                separator=" ",
-                show_coords=True,
-            )
-
-        return len(set(positions))
+        return aligned

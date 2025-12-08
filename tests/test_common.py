@@ -180,9 +180,26 @@ class TestCommonUtils(unittest.TestCase):
             common_utils.within_range(5, [(1, 5), (10, 15)], inclusive=False)
         )
 
-        self.assertEqual(common_utils.range_coverage([(1, 3), (5, 7), (2, 6)]), 7)
+        # Test with new RangeMode API
+        from fraocme.common import RangeMode
+
         self.assertEqual(
-            common_utils.range_coverage([(1, 3), (5, 7), (2, 6)], inclusive=False), 5
+            common_utils.range_coverage(
+                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.INCLUSIVE
+            ),
+            7,
+        )
+        self.assertEqual(
+            common_utils.range_coverage(
+                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.HALF_OPEN
+            ),
+            6,
+        )
+        self.assertEqual(
+            common_utils.range_coverage(
+                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.EXCLUSIVE
+            ),
+            5,
         )
 
     def test_merge_ranges_empty(self):
