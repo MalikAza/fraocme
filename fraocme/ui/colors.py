@@ -86,7 +86,18 @@ class c:  # noqa: N801
 
     @staticmethod
     def muted(text: str) -> str:
-        return c.dim(text)
+        # Ensure the 'dim' (muted) styling persists even if `text` contains
+        # inner color sequences that include a reset. Approach:
+        # - Prepend DIM before the whole string
+        # - After every RESET sequence found inside the text, re-insert DIM so
+        #   the muted effect continues
+        # - Append a final RESET
+        dim = Colors.DIM
+        reset = Colors.RESET
+
+        # Replace any reset in the inner text with reset + dim so muted resumes
+        safe = text.replace(reset, reset + dim)
+        return f"{dim}{safe}{reset}"
 
     # Stats coloring
     @staticmethod

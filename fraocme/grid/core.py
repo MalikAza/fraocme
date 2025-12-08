@@ -20,7 +20,7 @@ class Grid(Generic[T]):
     Grid access: grid[y][x] or grid.at(x, y)
 
     Example:
-        grid = Grid.from_chars("abc\ndef")  # 3x2 grid of strings
+        grid = Grid.from_chars("abc\ndef")    # 3x2 grid of strings
         grid.width, grid.height               # (3, 2)
         grid.at(1, 0)                         # 'b'
         grid = grid.set(0, 1, "z")            # structural sharing copy
@@ -260,13 +260,14 @@ class Grid(Generic[T]):
             ring: Distance ring
             include_diagonals: Whether to include diagonal neighbors
 
-        Returns:
-            List of (position, value) tuples for neighbors at the specified ring
-
         Example:
             grid = Grid.from_chars("abc\ndef\nghi")
             grid.get_neighbor_values((1, 1), include_diagonals=False)
-            # [((1, 0), 'b'), ((2, 1), 'f'), ((1, 2), 'h'), ((0, 1), 'd')]
+
+        Returns:
+            List of (position, value) tuples for neighbors at the specified ring
+            [((1, 0), 'b'), ((2, 1), 'f'), ((1, 2), 'h'), ((0, 1), 'd')]
+
         """
         neighbors = self.get_neighbors(pos, ring, include_diagonals)
         return [(neighbor, self.at(*neighbor)) for neighbor in neighbors]
@@ -282,12 +283,13 @@ class Grid(Generic[T]):
             direction: Direction to look
             distance: Distance to neighbor (default 1)
 
-        Returns:
-            Neighbor position if in bounds, None otherwise
-
         Example:
             grid.neighbor((1, 1), NORTH)       # (1, 0)
             grid.neighbor((1, 1), EAST, 3)     # (4, 1)
+
+        Returns:
+            Neighbor position if in bounds, None otherwise
+            [(1, 0), (4, 1)]
         """
         new_pos = direction.apply(pos, distance)
         return new_pos if self.in_bounds(new_pos) else None

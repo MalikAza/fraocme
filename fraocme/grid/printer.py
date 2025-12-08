@@ -109,7 +109,6 @@ def print_grid_heatmap(
         grid = Grid.from_ints("123\\n456\\n789")
         print_grid_heatmap(grid)  # Colors: 1=red(min), 5=yellow(median), 9=green(max)
     """
-    # Extract all values
     values = []
     for y in range(grid.height):
         for x in range(grid.width):
@@ -551,7 +550,6 @@ def print_grid_animated(
     # Calculate frame skipping if needed
     total_positions = len(positions)
     if total_positions > max_iterations:
-        # Calculate step size to reduce frames to max_iterations
         step_size = total_positions / max_iterations
         frame_indices = [int(i * step_size) for i in range(max_iterations)]
         # Always include the last position
@@ -566,7 +564,6 @@ def print_grid_animated(
     else:
         frame_indices = list(range(total_positions))
 
-    # Calculate total lines for the animation area
     total_lines = rows_to_print
     if show_coords:
         total_lines += 1  # Header line
@@ -623,7 +620,6 @@ def print_grid_animated(
         # Sleep before next frame
         time.sleep(delay)
 
-    # Final message
     print(c.success(f"\n Animation complete! ({total_positions} steps)"))
 
 
@@ -682,7 +678,6 @@ def print_grid_animated_with_direction(
     rows_to_print = min(grid.height, max_rows) if max_rows else grid.height
     cols_to_print = min(grid.width, max_cols) if max_cols else grid.width
 
-    # Calculate frame skipping if needed
     total_positions = len(positions)
     if total_positions > max_iterations:
         # Calculate step size to reduce frames to max_iterations
@@ -700,7 +695,6 @@ def print_grid_animated_with_direction(
     else:
         frame_indices = list(range(total_positions))
 
-    # Calculate total lines for the animation area
     total_lines = rows_to_print
     if show_coords:
         total_lines += 1  # Header line
@@ -781,8 +775,6 @@ def print_grid_animated_with_direction(
 
             print(separator.join(line_parts))
 
-        # Sleep
         time.sleep(delay)
 
-    # Final message
     print(c.success(f"\n Animation complete! ({total_positions} steps)"))
