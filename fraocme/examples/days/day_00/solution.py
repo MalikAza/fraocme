@@ -1,24 +1,21 @@
 import time
 
 from fraocme import Solver
+from fraocme.common.parser import char_lines
 from fraocme.common.printer import (
     print_dict_head,
     print_dict_row,
     print_ranges,
     print_row_stats,
 )
-from fraocme.grid import int_grid
 from fraocme.profiling.timer import benchmark, timed
 from fraocme.ui.colors import c
 
 
 class Day0(Solver):
-    def __init__(self, day: int = 0, debug: bool = False):
-        super().__init__(day=day, debug=debug, copy_input=True)
-
     @timed  # ex timed decorator test
     def parse(self, raw: str) -> list[list[int]]:
-        return int_grid(raw)
+        return char_lines(raw)
 
     def part1(self, data: list[list[int]]) -> int:
         # Example debug output

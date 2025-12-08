@@ -1,136 +1,135 @@
 """
-Day 4 Example: Pathfinding Algorithms
+Day 04 Example: Range Utility Functions
 
-Demonstrates BFS, Dijkstra, and A* pathfinding on grids.
+Demonstrates range manipulation functions from fraocme.common.utils:
+- ranges_overlap() - Check if two ranges overlap
+- range_intersection() - Get overlapping part
+- merge_ranges() - Merge overlapping ranges
+- within_range() - Check if value in any range
+- range_coverage() - Calculate total coverage
 """
 
 from fraocme import Solver
-from fraocme.grid import Grid, a_star, bfs, dijkstra, manhattan_distance
-from fraocme.grid.printer import print_grid_path
-from fraocme.profiling.timer import timed
+from fraocme.common import RangeMode
+from fraocme.common.parser import ranges, sections
+from fraocme.common.printer import print_ranges
+from fraocme.common.utils import (
+    merge_ranges,
+    range_coverage,
+    range_intersection,
+    ranges_overlap,
+    within_range,
+)
 from fraocme.ui.colors import c
 
 
 class Day4(Solver):
-    def __init__(self, day: int = 4, debug: bool = False):
-        super().__init__(day=day, debug=debug, copy_input=True)
+    def parse(self, raw: str) -> list[str]:
+        """Parse into sections for demonstration."""
+        return sections(raw)
 
-    def parse(self, raw: str) -> Grid[str]:
-        """Parse the input into a grid."""
-        return Grid.from_chars(raw)
-
-    @timed
-    def part1(self, grid: Grid[str]) -> int:
+    def part1(self, data: list[str]) -> int:
         """
-        Use BFS to find shortest path (unweighted).
+        Demonstrate basic range utilities.
         """
-        self.debug(c.bold("\n=== Part 1: BFS Pathfinding ===\n"))
+        self.debug(c.bold("\n=== Part 1: Basic Range Utilities ===\n"))
 
-        # Find start and end
-        start = grid.find_first("S")
-        end = grid.find_first("E")
+        # Parse ranges from input
+        range_data = ranges(data[0].strip(), range_delimiter="-", entry_delimiter=",")
+        self.debug(c.cyan("Input ranges:"))
+        self.debug(lambda: print_ranges(range_data, head=5))
 
-        if not start or not end:
-            self.debug(c.red("Start or End not found!"))
-            return 0
+        # 1. ranges_overlap() - Check if ranges overlap
+        self.debug(c.cyan("\n1. ranges_overlap() - Check overlaps:"))
+        test_pairs = [
+            ((1, 5), (3, 8)),
+            ((1, 5), (6, 10)),
+            ((1, 5), (5, 10)),
+            ((10, 20), (15, 25)),
+        ]
+        for r1, r2 in test_pairs:
+            overlap = ranges_overlap(r1, r2)
+            result = c.green("Yes") if overlap else c.red("No")
+            self.debug(f"   {r1} & {r2} → {result}")
 
-        self.debug(c.cyan(f"Start: {start}, End: {end}"))
-        self.debug(f"Grid: {grid.dimensions}\n")
+        # 2. range_intersection() - Get overlapping part
+        self.debug(c.cyan("\n2. range_intersection() - Get overlap:"))
+        for r1, r2 in test_pairs:
+            intersection = range_intersection(r1, r2)
+            if intersection:
+                self.debug(f"   {r1} ∩ {r2} = {c.green(str(intersection))}")
+            else:
+                self.debug(f"   {r1} ∩ {r2} = {c.red('None')}")
 
-        # Run BFS
-        self.debug(c.yellow("Running BFS (uniform cost)..."))
-        path = bfs(
-            grid,
-            start=start,
-            end=end,
-            is_walkable=lambda pos, val: val != "#",
-        )
+        # Count overlapping pairs from input
+        overlap_count = 0
+        for i, r1 in enumerate(range_data):
+            for r2 in range_data[i + 1 :]:
+                if ranges_overlap(r1, r2):
+                    overlap_count += 1
 
-        if path:
-            self.debug(c.success("\n✓ Path found!"))
-            self.debug(f"  Length: {path.length} steps")
-            self.debug(f"  Cost: {path.cost}")
+        self.debug(c.cyan(f"\nTotal overlapping pairs: {c.green(str(overlap_count))}"))
 
-            # Visualize the path
-            self.debug(c.cyan("\nPath visualization:"))
-            self.debug(
-                lambda: print_grid_path(
-                    grid, path.positions, separator=" ", show_coords=True
-                )
-            )
+        return overlap_count
 
-            return path.length
-        else:
-            self.debug(c.red("\n✗ No path found!"))
-            return 0
-
-    @timed
-    def part2(self, grid: Grid[str]) -> int:
+    def part2(self, data: list[str]) -> int:
         """
-        Compare Dijkstra and A* with weighted costs.
+        Demonstrate advanced range utilities.
         """
-        self.debug(c.bold("\n=== Part 2: Dijkstra vs A* ===\n"))
+        self.debug(c.bold("\n=== Part 2: Advanced Range Utilities ===\n"))
 
-        start = grid.find_first("S")
-        end = grid.find_first("E")
+        range_data = ranges(data[0].strip(), range_delimiter="-", entry_delimiter=",")
 
-        if not start or not end:
-            return 0
+        # 3. merge_ranges() - Merge overlapping ranges
+        self.debug(c.cyan("3. merge_ranges() - Merge overlapping:"))
+        self.debug(f"   Original: {len(range_data)} ranges")
+        merged = merge_ranges(range_data, inclusive=True)
+        self.debug(f"   Merged: {c.green(str(len(merged)))} ranges")
+        self.debug(lambda: print_ranges(merged, head=5))
 
-        # Define cost function (different terrain costs)
-        def cost_fn(from_pos, from_val, to_pos, to_val):
-            """Cost function: dots cost 1, start/end cost 1."""
-            if to_val in (".", "S", "E"):
-                return 1
-            return float("inf")  # Walls are impassable
+        # Show specific merge example
+        self.debug(c.muted("\n   Example merge:"))
+        example = [(1, 5), (3, 8), (10, 15), (14, 20)]
+        merged_example = merge_ranges(example)
+        self.debug(f"   {example}")
+        self.debug(f"   → {c.green(str(merged_example))}")
 
-        # Run Dijkstra
-        self.debug(c.yellow("1. Running Dijkstra's algorithm..."))
-        dijkstra_path = dijkstra(
-            grid,
-            start=start,
-            end=end,
-            cost_fn=cost_fn,
-        )
+        # 4. within_range() - Check if value in ranges
+        self.debug(c.cyan("\n4. within_range() - Check if value in ranges:"))
+        test_value = ranges(data[1].strip(), range_delimiter="-", entry_delimiter=",")
+        test_ranges = merged[:3]  # Use first 3 merged ranges
 
-        if dijkstra_path:
-            self.debug(c.success("   ✓ Dijkstra path found!"))
-            self.debug(f"     Length: {dijkstra_path.length} steps")
-            self.debug(f"     Cost: {dijkstra_path.cost}")
+        for val_range in test_value[:5]:
+            val = val_range[0]  # Just use start of range as test value
+            is_within = within_range(val, test_ranges)
+            result = c.green("Yes") if is_within else c.red("No")
+            self.debug(f"   Is {val} in {test_ranges}? {result}")
 
-        # Run A*
-        self.debug(c.yellow("\n2. Running A* algorithm..."))
-        astar_path = a_star(
-            grid,
-            start=start,
-            end=end,
-            heuristic=manhattan_distance,
-            cost_fn=cost_fn,
-        )
+        # 5. range_coverage() - Calculate total coverage
+        self.debug(c.cyan("\n5. range_coverage() - Total coverage:"))
 
-        if astar_path:
-            self.debug(c.success("   ✓ A* path found!"))
-            self.debug(f"     Length: {astar_path.length} steps")
-            self.debug(f"     Cost: {astar_path.cost}")
+        # Before merge
+        coverage_before = range_coverage(range_data)
+        self.debug(f"   Original ranges coverage: {c.yellow(str(coverage_before))}")
 
-        # Compare results
-        if dijkstra_path and astar_path:
-            self.debug(c.cyan("\n3. Comparison:"))
-            self.debug(
-                f"   Both found optimal path: {dijkstra_path.cost == astar_path.cost}"
-            )
-            self.debug(
-                f"   Same path taken: {dijkstra_path.positions == astar_path.positions}"
-            )
+        # After merge (no overlap)
+        coverage_after = range_coverage(merged)
+        self.debug(f"   Merged ranges coverage: {c.green(str(coverage_after))}")
 
-            # Visualize A* path
-            self.debug(c.cyan("\nA* path visualization:"))
-            self.debug(
-                lambda: print_grid_path(
-                    grid, astar_path.positions, separator=" ", show_coords=True
-                )
-            )
+        # Difference shows overlap
+        overlap_total = coverage_before - coverage_after
+        self.debug(f"   Overlap removed: {c.red(str(overlap_total))}")
 
-            return int(astar_path.cost)
+        # Compare inclusive vs exclusive
+        self.debug(c.muted("\n   Inclusive vs Exclusive vs Half-open:"))
+        example_ranges = [(1, 5), (10, 15)]
+        inclusive = range_coverage(example_ranges, mode=RangeMode.INCLUSIVE)
+        half_open = range_coverage(example_ranges, mode=RangeMode.HALF_OPEN)
+        exclusive = range_coverage(example_ranges, mode=RangeMode.EXCLUSIVE)
+        self.debug(f"   {example_ranges}")
+        self.debug(f"   Inclusive (endpoints counted): {c.green(str(inclusive))}")
+        half_str = c.yellow(str(half_open))
+        self.debug(f"   Half-open (endpoints partially counted): {half_str}")
+        self.debug(f"   Exclusive (endpoints not counted): {c.red(str(exclusive))}")
 
-        return 0
+        return coverage_after
