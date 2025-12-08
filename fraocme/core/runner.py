@@ -40,7 +40,9 @@ class Runner:
 
         return sorted(days)
 
-    def load_solver(self, day: int, debug: bool = False, show_traceback: bool = True) -> Solver:
+    def load_solver(
+        self, day: int, debug: bool = False, show_traceback: bool = True
+    ) -> Solver:
         """Import and instantiate a solver for a given day."""
         day_dir = self.get_day_dir(day)
         solution_file = day_dir / "solution.py"
@@ -79,14 +81,21 @@ class Runner:
         return None
 
     def run_day(
-        self, day: int, parts: list[int] = [1, 2], debug: bool = False, show_traceback: bool = True
+        self,
+        day: int,
+        parts: list[int] = [1, 2],
+        debug: bool = False,
+        show_traceback: bool = True,
     ) -> dict[int, tuple[int, float]]:
         """Run a specific day."""
         solver = self.load_solver(day, debug=debug, show_traceback=show_traceback)
         return solver.run(parts)
 
     def run_all(
-        self, parts: list[int] = [1, 2], debug: bool = False, show_traceback: bool = True
+        self,
+        parts: list[int] = [1, 2],
+        debug: bool = False,
+        show_traceback: bool = True,
     ) -> dict[int, dict[int, tuple[int, float]]]:
         """Run all available days."""
         results = {}

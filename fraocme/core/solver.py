@@ -22,7 +22,11 @@ class Solver(ABC):
     """
 
     def __init__(
-        self, day: int | None = None, debug: bool = False, copy_input: bool = True, show_traceback: bool = True
+        self,
+        day: int | None = None,
+        debug: bool = False,
+        copy_input: bool = True,
+        show_traceback: bool = True,
     ):
         self.day = day
         self.debug_enabled = debug

@@ -109,7 +109,9 @@ class TestCmdRun(unittest.TestCase):
 
         cmd_run(args)
 
-        mock_runner.run_all.assert_called_once_with(parts=[1, 2], debug=False, show_traceback=True)
+        mock_runner.run_all.assert_called_once_with(
+            parts=[1, 2], debug=False, show_traceback=True
+        )
         mock_stats.save.assert_called_once()
 
     @patch("fraocme.cli.Runner")
@@ -134,7 +136,9 @@ class TestCmdRun(unittest.TestCase):
         cmd_run(args)
 
         mock_runner.day_exists.assert_called_once_with(5)
-        mock_runner.run_day.assert_called_once_with(5, parts=[1, 2], debug=False, show_traceback=True)
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1, 2], debug=False, show_traceback=True
+        )
 
     @patch("fraocme.cli.Runner")
     @patch("fraocme.cli.Stats")
@@ -157,7 +161,9 @@ class TestCmdRun(unittest.TestCase):
 
         cmd_run(args)
 
-        mock_runner.run_day.assert_called_once_with(5, parts=[1], debug=False, show_traceback=True)
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1], debug=False, show_traceback=True
+        )
 
     @patch("fraocme.cli.Runner")
     @patch("fraocme.cli.Stats")
@@ -245,7 +251,9 @@ class TestCmdRun(unittest.TestCase):
 
         cmd_run(args)
 
-        mock_runner.run_day.assert_called_once_with(5, parts=[1, 2], debug=False, show_traceback=False)
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1, 2], debug=False, show_traceback=False
+        )
 
 
 class TestCmdStats(unittest.TestCase):
