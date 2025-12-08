@@ -35,6 +35,9 @@ def main():
     run_parser.add_argument(
         "-d", "--debug", action="store_true", help="Enable debug output"
     )
+    run_parser.add_argument(
+        "--no-traceback", action="store_true", help="Don't show traceback on errors"
+    )
     run_parser.add_argument("--no-stats", action="store_true", help="Don't save stats")
 
     # ─────────────────────────────────────────────────────────
@@ -90,7 +93,7 @@ def cmd_run(args):
 
     # Run all days
     if args.all:
-        results = runner.run_all(parts=parts, debug=args.debug)
+        results = runner.run_all(parts=parts, debug=args.debug, show_traceback=not args.no_traceback)
         if not args.no_stats:
             for day, day_results in results.items():
                 stats.update(day, day_results)
@@ -110,7 +113,7 @@ def cmd_run(args):
         )
         sys.exit(1)
 
-    results = runner.run_day(args.day, parts=parts, debug=args.debug)
+    results = runner.run_day(args.day, parts=parts, debug=args.debug, show_traceback=not args.no_traceback)
 
     if not args.no_stats:
         stats.update(args.day, results)

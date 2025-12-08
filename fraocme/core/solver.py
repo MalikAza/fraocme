@@ -22,11 +22,12 @@ class Solver(ABC):
     """
 
     def __init__(
-        self, day: int | None = None, debug: bool = False, copy_input: bool = True
+        self, day: int | None = None, debug: bool = False, copy_input: bool = True, show_traceback: bool = True
     ):
         self.day = day
         self.debug_enabled = debug
         self.copy_input = copy_input
+        self.show_traceback = show_traceback
         self._input_dir: Path | None = None
 
     # ─────────────────────────────────────────────────────────
@@ -106,8 +107,7 @@ class Solver(ABC):
 
         except Exception as e:
             print(f"  Part {c.cyan(part_name)}: {c.error(f'ERROR - {e}')}")
-            if self.debug_enabled:
-                # TODO: add a traceback flag rather than using debug?
+            if self.show_traceback:
                 tb = traceback.format_exc()
                 print(c.muted(tb))
             return None, 0.0
