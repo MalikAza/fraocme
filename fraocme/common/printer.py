@@ -62,7 +62,7 @@ def print_ranges(
         - INCLUSIVE: 6 values (10,11,12,13,14,15)
         - HALF_OPEN: 5 values (10,11,12,13,14)
         - EXCLUSIVE: 4 values (11,12,13,14)
-        
+
         from fraocme.common import RangeMode
         ranges = [(1, 5), (10, 15), (20, 25)]
         print_ranges(ranges, mode=RangeMode.INCLUSIVE)

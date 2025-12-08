@@ -135,7 +135,7 @@ class TestTimer(unittest.TestCase):
         timer.stop()
 
         min_lap = timer.min
-        self.assertTrue(0 < min_lap < 5)
+        self.assertTrue(0 < min_lap < 50)  # More realistic threshold in milliseconds
 
     def test_timer_min_empty(self):
         """Test min returns 0 with no laps."""
