@@ -37,6 +37,16 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(solver.day, 5)
         self.assertTrue(solver.debug_enabled)
 
+    def test_solver_show_traceback_default(self):
+        """Test solver shows traceback by default."""
+        solver = DummySolver(day=1)
+        self.assertTrue(solver.show_traceback)
+
+    def test_solver_show_traceback_disabled(self):
+        """Test solver can disable traceback display."""
+        solver = DummySolver(day=1, show_traceback=False)
+        self.assertFalse(solver.show_traceback)
+
     def test_solver_copy_input_default(self):
         """Test solver copies input by default."""
         solver = DummySolver(day=1)
@@ -260,6 +270,42 @@ class DaySolver(Solver):
 
         solver = self.runner.load_solver(1, debug=True)
         self.assertTrue(solver.debug_enabled)
+
+    def test_load_solver_with_show_traceback_default(self):
+        """Test load_solver shows traceback by default."""
+        day_dir = self.runner.get_day_dir(1)
+        day_dir.mkdir(parents=True)
+
+        solution_code = """
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): return raw.strip()
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+"""
+        (day_dir / "solution.py").write_text(solution_code)
+
+        solver = self.runner.load_solver(1)
+        self.assertTrue(solver.show_traceback)
+
+    def test_load_solver_with_show_traceback_disabled(self):
+        """Test load_solver respects show_traceback flag."""
+        day_dir = self.runner.get_day_dir(1)
+        day_dir.mkdir(parents=True)
+
+        solution_code = """
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): return raw.strip()
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+"""
+        (day_dir / "solution.py").write_text(solution_code)
+
+        solver = self.runner.load_solver(1, show_traceback=False)
+        self.assertFalse(solver.show_traceback)
 
     def test_load_solver_no_solver_class(self):
         """Test load_solver raises error if no Solver subclass found."""
