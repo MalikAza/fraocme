@@ -393,6 +393,103 @@ class TestStats(unittest.TestCase):
         stats = Stats()
         self.assertEqual(stats.path, Path.cwd() / "stats.json")
 
+    def test_stats_print_day_best_only(self):
+        """Test Stats print_day with best_only flag."""
+        stats = Stats(path=self.stats_file)
+        results = {1: (42, 100.0), 2: (99, 200.0)}
+        stats.update(1, results)
+
+        captured = StringIO()
+        sys.stdout = captured
+
+        stats.print_day(1, best_only=True)
+
+        sys.stdout = sys.__stdout__
+        output = captured.getvalue()
+
+        self.assertIn("Day 1", output)
+        self.assertIn("Part 1", output)
+        self.assertIn("Part 2", output)
+        # Should show only min_ms, not detailed stats
+        self.assertNotIn("Runs", output)
+        self.assertNotIn("Last", output)
+
+    def test_stats_print_all_with_data(self):
+        """Test Stats print_all with data."""
+        stats = Stats(path=self.stats_file)
+        results1 = {1: (42, 100.0), 2: (99, 200.0)}
+        results2 = {1: (123, 50.0)}
+        stats.update(1, results1)
+        stats.update(2, results2)
+
+        captured = StringIO()
+        sys.stdout = captured
+
+        stats.print_all(best_only=False)
+
+        sys.stdout = sys.__stdout__
+        output = captured.getvalue()
+
+        self.assertIn("Advent of Code Stats", output)
+        self.assertIn("Day 1", output)
+        self.assertIn("Day 2", output)
+        self.assertIn("Total", output)
+
+    def test_stats_print_all_best_only(self):
+        """Test Stats print_all with best_only flag."""
+        stats = Stats(path=self.stats_file)
+        results1 = {1: (42, 100.0), 2: (99, 200.0)}
+        results2 = {1: (123, 50.0)}
+        stats.update(1, results1)
+        stats.update(2, results2)
+
+        captured = StringIO()
+        sys.stdout = captured
+
+        stats.print_all(best_only=True)
+
+        sys.stdout = sys.__stdout__
+        output = captured.getvalue()
+
+        self.assertIn("Advent of Code Stats", output)
+        # Should show summary table
+        self.assertIn("Day", output)
+        self.assertIn("Part 1", output)
+        self.assertIn("Part 2", output)
+        # Should not show detailed stats
+        self.assertNotIn("Runs", output)
+        self.assertNotIn("Last", output)
+        self.assertIn("Total", output)
+
+    def test_stats_print_day_with_partial_results(self):
+        """Test Stats print_day when only one part has data."""
+        stats = Stats(path=self.stats_file)
+        results = {1: (42, 100.0)}  # Only part 1
+        stats.update(1, results)
+
+        captured = StringIO()
+        sys.stdout = captured
+
+        stats.print_day(1, best_only=False)
+
+        sys.stdout = sys.__stdout__
+        output = captured.getvalue()
+
+        self.assertIn("Day 1", output)
+        self.assertIn("Part 1", output)
+        # Part 2 should not appear
+        self.assertNotIn("Part 2", output)
+
+    # Color-specific tests removed: color helpers vary across environments
+    # and the `c` helper exposes semantic methods (e.g. success/error/time)
+    # rather than direct `bright_*` wrappers. We keep the `None` case test.
+
+    def test_stats_color_time_str_none(self):
+        """Test Stats colors None times as muted."""
+        stats = Stats(path=self.stats_file)
+        colored = stats._color_time_str(None, "-")
+        self.assertIn("-", colored)
+
 
 if __name__ == "__main__":
     unittest.main()
