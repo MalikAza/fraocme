@@ -3,7 +3,13 @@ import unittest
 from io import StringIO
 
 from fraocme.ui.colors import Colors, c
-from fraocme.ui.printer import print_header, print_section
+from fraocme.ui.printer import (
+    print_day_header,
+    print_header,
+    print_part_error,
+    print_part_result,
+    print_section,
+)
 
 
 class TestColors(unittest.TestCase):
@@ -214,6 +220,74 @@ class TestPrinter(unittest.TestCase):
         output = captured_output.getvalue()
         self.assertIn("Section", output)
         self.assertIn("⭐", output)
+
+    def test_print_day_header(self):
+        """Test print_day_header prints formatted day number."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        print_day_header(5)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Day", output)
+        self.assertIn("5", output)
+        self.assertIn("❄", output)
+
+    def test_print_part_result(self):
+        """Test print_part_result prints formatted result."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        print_part_result(1, 42, 123.45)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Part", output)
+        self.assertIn("one", output)
+        self.assertIn("42", output)
+        self.assertIn("⭐", output)
+
+    def test_print_part_result_part2(self):
+        """Test print_part_result prints part 2 correctly."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        print_part_result(2, 99, 456.78)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Part", output)
+        self.assertIn("two", output)
+        self.assertIn("99", output)
+        self.assertIn("🌟", output)
+
+    def test_print_part_error(self):
+        """Test print_part_error prints formatted error."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        error = ValueError("Test error message")
+        print_part_error(1, error)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Part", output)
+        self.assertIn("one", output)
+        self.assertIn("ERROR", output)
+        self.assertIn("Test error message", output)
+        self.assertIn("❌", output)
+
+    def test_print_part_error_part2(self):
+        """Test print_part_error prints part 2 error correctly."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        error = RuntimeError("Runtime issue")
+        print_part_error(2, error)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Part", output)
+        self.assertIn("two", output)
+        self.assertIn("ERROR", output)
+        self.assertIn("Runtime issue", output)
+        self.assertIn("❌", output)
 
 
 if __name__ == "__main__":
