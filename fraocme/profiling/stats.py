@@ -173,11 +173,11 @@ class Stats:
         if ms is None:
             return c.muted(text)
         elif ms < 100:
-            return c.bright_green(text)
+            return c.success(text)
         elif ms < 1000:
-            return c.bright_yellow(text)
+            return c.warning(text)
         else:
-            return c.bright_red(text)
+            return c.error(text)
 
     def _print_totals(self) -> None:
         """Print total time across all solutions."""

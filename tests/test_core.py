@@ -226,7 +226,12 @@ class TestSolver(unittest.TestCase):
         input_file.write_text("test")
         solver.set_input_dir(Path(self.temp_dir))
 
+        # Capture stdout while running to ensure traceback is printed
         captured_output = io.StringIO()
+        from contextlib import redirect_stdout
+
+        with redirect_stdout(captured_output):
+            solver.run([1])
 
         output = captured_output.getvalue()
 
@@ -622,9 +627,11 @@ class DaySolver(Solver):
 
         # Day 1 should succeed
         self.assertIn(1, results)
-        # Day 2 should fail but not crash
+        # Day 2 should fail but not crash: solver prints error details
         output = captured_output.getvalue()
-        self.assertIn("Day 2 failed", output)
+        # Expect the solver error output (ERROR and Traceback)
+        self.assertIn("ERROR - Parse error", output)
+        self.assertIn("Traceback", output)
 
 
 if __name__ == "__main__":
