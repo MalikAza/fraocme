@@ -2,6 +2,8 @@ import math
 from collections import Counter
 from typing import Sequence, TypeVar
 
+from .types import RangeMode
+
 T = TypeVar("T")
 
 
@@ -438,31 +440,48 @@ def within_range(
             if start < value < end:
                 return True
     return False
-
-
-def range_coverage(ranges: list[tuple[int, int]], inclusive: bool = True) -> int:
+def range_coverage(
+    ranges: list[tuple[int, int]], mode: RangeMode = RangeMode.HALF_OPEN
+) -> int:
     """
     Calculate total coverage of ranges.
 
     Args:
         ranges: List of ranges as (start, end)
+        mode: Counting mode (default: RangeMode.HALF_OPEN)
+            - RangeMode.INCLUSIVE: Both endpoints [start, end]
+            - RangeMode.HALF_OPEN: Exclude end [start, end)
+            - RangeMode.EXCLUSIVE: Exclude both (start, end)
 
     Returns:
         Total coverage as int
 
-    Example:
-        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)])
+    Examples:
+        For range (10, 15):
+        - INCLUSIVE: 6 values (10,11,12,13,14,15)
+        - HALF_OPEN: 5 values (10,11,12,13,14)
+        - EXCLUSIVE: 4 values (11,12,13,14)
+        
+        from fraocme.common import RangeMode
+        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], mode=RangeMode.INCLUSIVE)
+        # Returns: 17
+        
+        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], mode=RangeMode.HALF_OPEN)
         # Returns: 14
-
-    Example (exclusive):
-        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], inclusive=False)
-        # Returns: 10
+        
+        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], mode=RangeMode.EXCLUSIVE)
+        # Returns: 11
     """
-    merged = merge_ranges(ranges, inclusive=inclusive)
+    # Convert mode to inclusive boolean for merge_ranges
+    merge_inclusive = mode != RangeMode.EXCLUSIVE
+    merged = merge_ranges(ranges, inclusive=merge_inclusive)
+
     total = 0
     for start, end in merged:
-        if inclusive:
-            total += end - start + 1
-        else:
-            total += end - start - 1
+        if mode == RangeMode.INCLUSIVE:
+            total += end - start + 1  # [start, end]
+        elif mode == RangeMode.EXCLUSIVE:
+            total += end - start - 1  # (start, end)
+        else:  # HALF_OPEN
+            total += end - start  # [start, end)
     return total

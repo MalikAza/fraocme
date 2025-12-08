@@ -1,6 +1,7 @@
 import statistics
 
 from ..ui.colors import c
+from .types import RangeMode
 
 
 def print_row_stats(row: list[int]) -> None:
@@ -38,8 +39,9 @@ def print_row_stats(row: list[int]) -> None:
 
 def print_ranges(
     ranges: list[tuple[int, int]],
-    width: int = 50,
+    mode: RangeMode = RangeMode.HALF_OPEN,
     head: int | None = 5,
+    width: int = 50,
     tail: int | None = None,
 ) -> None:
     """
@@ -47,13 +49,23 @@ def print_ranges(
 
     Args:
         ranges: List of (start, end) tuples
+        mode: Counting mode (default: RangeMode.HALF_OPEN)
+            - RangeMode.INCLUSIVE: Both endpoints [start, end]
+            - RangeMode.HALF_OPEN: Exclude end [start, end)
+            - RangeMode.EXCLUSIVE: Exclude both (start, end)
         width: Character width for the visualization
         head: Show first N ranges (default: 5, None for all)
         tail: Show last N ranges (default: None)
 
-    Example:
+    Examples:
+        For range (10, 15):
+        - INCLUSIVE: 6 values (10,11,12,13,14,15)
+        - HALF_OPEN: 5 values (10,11,12,13,14)
+        - EXCLUSIVE: 4 values (11,12,13,14)
+        
+        from fraocme.common import RangeMode
         ranges = [(1, 5), (10, 15), (20, 25)]
-        print_ranges(ranges)
+        print_ranges(ranges, mode=RangeMode.INCLUSIVE)
     """
     if not ranges:
         print("No ranges")
@@ -62,7 +74,14 @@ def print_ranges(
     total = len(ranges)
     all_starts = [r[0] for r in ranges]
     all_ends = [r[1] for r in ranges]
-    lengths = [end - start for start, end in ranges]
+
+    # Calculate lengths based on mode
+    if mode == RangeMode.INCLUSIVE:
+        lengths = [end - start + 1 for start, end in ranges]  # [start, end]
+    elif mode == RangeMode.EXCLUSIVE:
+        lengths = [end - start - 1 for start, end in ranges]  # (start, end)
+    else:  # HALF_OPEN
+        lengths = [end - start for start, end in ranges]  # [start, end)
 
     global_min = min(all_starts)
     global_max = max(all_ends)
@@ -93,7 +112,12 @@ def print_ranges(
     max_len_digits = len(str(max_len))
 
     def print_range(start: int, end: int) -> None:
-        length = end - start
+        if mode == RangeMode.INCLUSIVE:
+            length = end - start + 1  # [start, end]
+        elif mode == RangeMode.EXCLUSIVE:
+            length = end - start - 1  # (start, end)
+        else:  # HALF_OPEN
+            length = end - start  # [start, end)
         label = f"{start}-{end}".rjust(max_label_len)
         length_padded = str(length).rjust(max_len_digits)
         len_str = c.stat(length, min_len, max_len, median_len)

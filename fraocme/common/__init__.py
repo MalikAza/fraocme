@@ -6,6 +6,7 @@ from .printer import (
     print_ranges,
     print_row_stats,
 )
+from .types import RangeMode
 from .utils import (
     all_equal,
     chunks,
@@ -57,4 +58,5 @@ __all__ = [
     "print_dict_row",
     "print_dict_head",
     "print_max_in_rows",
+    "RangeMode",
 ]
