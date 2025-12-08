@@ -40,7 +40,9 @@ class Runner:
 
         return sorted(days)
 
-    def load_solver(self, day: int, debug: bool = False) -> Solver:
+    def load_solver(
+        self, day: int, debug: bool = False, show_traceback: bool = True
+    ) -> Solver:
         """Import and instantiate a solver for a given day."""
         day_dir = self.get_day_dir(day)
         solution_file = day_dir / "solution.py"
@@ -65,7 +67,7 @@ class Runner:
             raise ValueError(f"No Solver subclass found in day {day}")
 
         # Instantiate and configure
-        solver = solver_class(day=day, debug=debug)
+        solver = solver_class(day=day, debug=debug, show_traceback=show_traceback)
         solver.set_input_dir(day_dir)
 
         return solver
@@ -79,20 +81,27 @@ class Runner:
         return None
 
     def run_day(
-        self, day: int, parts: list[int] = [1, 2], debug: bool = False
+        self,
+        day: int,
+        parts: list[int] = [1, 2],
+        debug: bool = False,
+        show_traceback: bool = True,
     ) -> dict[int, tuple[int, float]]:
         """Run a specific day."""
-        solver = self.load_solver(day, debug=debug)
+        solver = self.load_solver(day, debug=debug, show_traceback=show_traceback)
         return solver.run(parts)
 
     def run_all(
-        self, parts: list[int] = [1, 2], debug: bool = False
+        self,
+        parts: list[int] = [1, 2],
+        debug: bool = False,
+        show_traceback: bool = True,
     ) -> dict[int, dict[int, tuple[int, float]]]:
         """Run all available days."""
         results = {}
         for day in self.get_all_days():
             try:
-                results[day] = self.run_day(day, parts, debug)
+                results[day] = self.run_day(day, parts, debug, show_traceback)
             except Exception as e:
                 print(f"\033[91mDay {day} failed: {e}\033[0m")
         return results

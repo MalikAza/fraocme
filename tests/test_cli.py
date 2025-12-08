@@ -55,6 +55,14 @@ class TestMainArgumentParsing(unittest.TestCase):
                 args = mock_run.call_args[0][0]
                 self.assertTrue(args.no_stats)
 
+    def test_run_command_with_no_traceback_flag(self):
+        """Test run command with --no-traceback flag."""
+        with patch("sys.argv", ["fraocme", "run", "1", "--no-traceback"]):
+            with patch("fraocme.cli.cmd_run") as mock_run:
+                main()
+                args = mock_run.call_args[0][0]
+                self.assertTrue(args.no_traceback)
+
     def test_stats_command(self):
         """Test stats command."""
         with patch("sys.argv", ["fraocme", "stats"]):
@@ -97,10 +105,13 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = False
+        args.no_traceback = False
 
         cmd_run(args)
 
-        mock_runner.run_all.assert_called_once_with(parts=[1, 2], debug=False)
+        mock_runner.run_all.assert_called_once_with(
+            parts=[1, 2], debug=False, show_traceback=True
+        )
         mock_stats.save.assert_called_once()
 
     @patch("fraocme.cli.Runner")
@@ -120,11 +131,14 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = False
+        args.no_traceback = False
 
         cmd_run(args)
 
         mock_runner.day_exists.assert_called_once_with(5)
-        mock_runner.run_day.assert_called_once_with(5, parts=[1, 2], debug=False)
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1, 2], debug=False, show_traceback=True
+        )
 
     @patch("fraocme.cli.Runner")
     @patch("fraocme.cli.Stats")
@@ -143,10 +157,13 @@ class TestCmdRun(unittest.TestCase):
         args.part = 1
         args.debug = False
         args.no_stats = False
+        args.no_traceback = False
 
         cmd_run(args)
 
-        mock_runner.run_day.assert_called_once_with(5, parts=[1], debug=False)
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1], debug=False, show_traceback=True
+        )
 
     @patch("fraocme.cli.Runner")
     @patch("fraocme.cli.Stats")
@@ -165,6 +182,7 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = True
+        args.no_traceback = False
 
         cmd_run(args)
 
@@ -186,6 +204,7 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = False
+        args.no_traceback = False
 
         with patch("sys.stdout", new=StringIO()):
             with self.assertRaises(SystemExit):
@@ -210,6 +229,31 @@ class TestCmdRun(unittest.TestCase):
         with patch("sys.stdout", new=StringIO()):
             with self.assertRaises(SystemExit):
                 cmd_run(args)
+
+    @patch("fraocme.cli.Runner")
+    @patch("fraocme.cli.Stats")
+    def test_cmd_run_with_no_traceback(self, mock_stats_class, mock_runner_class):
+        """Test running with --no-traceback flag disables traceback."""
+        mock_runner = MagicMock()
+        mock_stats = MagicMock()
+        mock_runner_class.return_value = mock_runner
+        mock_stats_class.return_value = mock_stats
+        mock_runner.day_exists.return_value = True
+        mock_runner.run_day.return_value = {}
+
+        args = MagicMock()
+        args.all = False
+        args.day = 5
+        args.part = None
+        args.debug = False
+        args.no_stats = False
+        args.no_traceback = True
+
+        cmd_run(args)
+
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1, 2], debug=False, show_traceback=False
+        )
 
 
 class TestCmdStats(unittest.TestCase):
