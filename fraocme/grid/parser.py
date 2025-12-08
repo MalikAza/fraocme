@@ -124,7 +124,6 @@ def from_dense(
     return Grid(data)
 
 
-# Add factory methods to Grid class
 Grid.from_string = staticmethod(from_string)
 Grid.from_ints = staticmethod(from_ints)
 Grid.from_chars = staticmethod(from_chars)

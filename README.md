@@ -122,16 +122,6 @@ uv run test
 
 See [tests/README.md](tests/README.md) for more details on test organization.
 
-## ✨ Code Quality
-
-Keep your code as clean as fresh snow with [Ruff](https://github.com/astral-sh/ruff):
-
-```bash
-uv run ruff check .        # Check for issues
-uv run ruff format .       # Format code
-uv run ruff check --fix .  # Auto-fix what we can
-```
-
 ## 🎄 Happy Coding!
 
 May your solutions be elegant, your bugs be few, and your stars be plentiful! ⭐⭐

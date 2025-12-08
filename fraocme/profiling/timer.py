@@ -2,6 +2,8 @@ import time
 from functools import wraps
 from typing import Any, Callable
 
+from fraocme.ui.printer import print_benchmark, print_timed
+
 
 class Timer:
     """Simple timer for benchmarking."""
@@ -66,8 +68,7 @@ def timed(func: Callable) -> Callable:
         start = time.perf_counter()
         result = func(*args, **kwargs)
         elapsed = (time.perf_counter() - start) * 1000
-        # TODO: better output formatting (colors etc)
-        print(f"{func.__name__}: {elapsed:.2f}ms")
+        print_timed(func.__name__, elapsed)
         return result
 
     return wrapper
@@ -91,9 +92,8 @@ def benchmark(iterations: int = 100):
             avg = sum(times) / len(times)
             min_t = min(times)
             max_t = max(times)
-            # TODO: better output formatting (colors etc)
-            print(f"{func.__name__} ({iterations} runs):")
-            print(f"  avg: {avg:.2f}ms | min: {min_t:.2f}ms | max: {max_t:.2f}ms")
+
+            print_benchmark(func.__name__, iterations, avg, min_t, max_t)
 
             return result
 

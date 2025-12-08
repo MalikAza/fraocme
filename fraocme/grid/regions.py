@@ -177,6 +177,5 @@ def find_regions(grid: Grid[T], predicate: Callable[[T], bool] | T) -> list[Regi
     return regions
 
 
-# Add region methods to Grid class
 Grid.flood_fill = lambda self, start, predicate: flood_fill(self, start, predicate)
 Grid.find_regions = lambda self, predicate: find_regions(self, predicate)
