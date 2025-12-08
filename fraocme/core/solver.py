@@ -31,11 +31,13 @@ class Solver(ABC):
         copy_input: bool = True,
         debug: bool = False,
         show_traceback: bool = True,
+        use_example: bool = False,
     ):
         self.day = day
         self.copy_input = copy_input
         self.debug_enabled = debug
         self.show_traceback = show_traceback
+        self.use_example = use_example
         self._input_dir: Path | None = None
 
     # ─────────────────────────────────────────────────────────
@@ -71,7 +73,8 @@ class Solver(ABC):
         if self._input_dir is None:
             raise ValueError("Input directory not set")
 
-        path = self._input_dir / "input.txt"
+        filename = "example_input.txt" if self.use_example else "input.txt"
+        path = self._input_dir / filename
         if not path.exists():
             raise FileNotFoundError(f"Input not found: {path}")
 

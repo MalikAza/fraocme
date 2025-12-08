@@ -36,6 +36,11 @@ def main():
         "-d", "--debug", action="store_true", help="Enable debug output"
     )
     run_parser.add_argument(
+        "--example",
+        action="store_true",
+        help="Run with example input instead of main input",
+    )
+    run_parser.add_argument(
         "--no-traceback", action="store_true", help="Don't show traceback on errors"
     )
     run_parser.add_argument("--no-stats", action="store_true", help="Don't save stats")
@@ -94,7 +99,10 @@ def cmd_run(args):
     # Run all days
     if args.all:
         results = runner.run_all(
-            parts=parts, debug=args.debug, show_traceback=not args.no_traceback
+            parts=parts,
+            debug=args.debug,
+            show_traceback=not args.no_traceback,
+            use_example=args.example,
         )
         if not args.no_stats:
             for day, day_results in results.items():
@@ -116,7 +124,11 @@ def cmd_run(args):
         sys.exit(1)
 
     results = runner.run_day(
-        args.day, parts=parts, debug=args.debug, show_traceback=not args.no_traceback
+        args.day,
+        parts=parts,
+        debug=args.debug,
+        show_traceback=not args.no_traceback,
+        use_example=args.example,
     )
 
     if not args.no_stats:
@@ -162,6 +174,10 @@ def cmd_create(args):
     input_file = day_dir / "input.txt"
     input_file.write_text("")
 
+    # Create example_input.txt
+    example_input_file = day_dir / "example_input.txt"
+    example_input_file.write_text("")
+
     # Create solution.py template
     day_class_name = f"Day{day_num}"
     solution_template = f'''from fraocme import Solver
@@ -193,7 +209,12 @@ class {day_class_name}(Solver):
         + c.success(" at ")
         + c.bold(str(day_dir))
     )
-    print(f"  {c.muted('Created:')} {input_file.name}, {solution_file.name}")
+    print(
+        c.muted("Created:")
+        + f" {input_file.name}"
+        + f", {example_input_file.name}"
+        + f", {solution_file.name}"
+    )
 
 
 if __name__ == "__main__":

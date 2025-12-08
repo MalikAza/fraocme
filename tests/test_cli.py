@@ -47,6 +47,14 @@ class TestMainArgumentParsing(unittest.TestCase):
                 args = mock_run.call_args[0][0]
                 self.assertEqual(args.part, 1)
 
+    def test_run_command_with_example_flag(self):
+        """Test run command with --example flag."""
+        with patch("sys.argv", ["fraocme", "run", "1", "--example"]):
+            with patch("fraocme.cli.cmd_run") as mock_run:
+                main()
+                args = mock_run.call_args[0][0]
+                self.assertTrue(args.example)
+
     def test_run_command_with_no_stats_flag(self):
         """Test run command with --no-stats flag."""
         with patch("sys.argv", ["fraocme", "run", "1", "--no-stats"]):
@@ -106,11 +114,12 @@ class TestCmdRun(unittest.TestCase):
         args.debug = False
         args.no_stats = False
         args.no_traceback = False
+        args.example = False
 
         cmd_run(args)
 
         mock_runner.run_all.assert_called_once_with(
-            parts=[1, 2], debug=False, show_traceback=True
+            parts=[1, 2], debug=False, show_traceback=True, use_example=False
         )
         mock_stats.save.assert_called_once()
 
@@ -132,12 +141,13 @@ class TestCmdRun(unittest.TestCase):
         args.debug = False
         args.no_stats = False
         args.no_traceback = False
+        args.example = False
 
         cmd_run(args)
 
         mock_runner.day_exists.assert_called_once_with(5)
         mock_runner.run_day.assert_called_once_with(
-            5, parts=[1, 2], debug=False, show_traceback=True
+            5, parts=[1, 2], debug=False, show_traceback=True, use_example=False
         )
 
     @patch("fraocme.cli.Runner")
@@ -158,11 +168,12 @@ class TestCmdRun(unittest.TestCase):
         args.debug = False
         args.no_stats = False
         args.no_traceback = False
+        args.example = False
 
         cmd_run(args)
 
         mock_runner.run_day.assert_called_once_with(
-            5, parts=[1], debug=False, show_traceback=True
+            5, parts=[1], debug=False, show_traceback=True, use_example=False
         )
 
     @patch("fraocme.cli.Runner")
@@ -183,6 +194,7 @@ class TestCmdRun(unittest.TestCase):
         args.debug = False
         args.no_stats = True
         args.no_traceback = False
+        args.example = False
 
         cmd_run(args)
 
@@ -205,6 +217,7 @@ class TestCmdRun(unittest.TestCase):
         args.debug = False
         args.no_stats = False
         args.no_traceback = False
+        args.example = False
 
         with patch("sys.stdout", new=StringIO()):
             with self.assertRaises(SystemExit):
@@ -225,6 +238,7 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = False
+        args.example = False
 
         with patch("sys.stdout", new=StringIO()):
             with self.assertRaises(SystemExit):
@@ -248,12 +262,64 @@ class TestCmdRun(unittest.TestCase):
         args.debug = False
         args.no_stats = False
         args.no_traceback = True
+        args.example = False
 
         cmd_run(args)
 
         mock_runner.run_day.assert_called_once_with(
-            5, parts=[1, 2], debug=False, show_traceback=False
+            5, parts=[1, 2], debug=False, show_traceback=False, use_example=False
         )
+
+    @patch("fraocme.cli.Runner")
+    @patch("fraocme.cli.Stats")
+    def test_cmd_run_with_example_flag(self, mock_stats_class, mock_runner_class):
+        """Test running with --example flag uses example input."""
+        mock_runner = MagicMock()
+        mock_stats = MagicMock()
+        mock_runner_class.return_value = mock_runner
+        mock_stats_class.return_value = mock_stats
+        mock_runner.day_exists.return_value = True
+        mock_runner.run_day.return_value = {}
+
+        args = MagicMock()
+        args.all = False
+        args.day = 5
+        args.part = None
+        args.debug = False
+        args.no_stats = False
+        args.no_traceback = False
+        args.example = True
+
+        cmd_run(args)
+
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1, 2], debug=False, show_traceback=True, use_example=True
+        )
+
+    @patch("fraocme.cli.Runner")
+    @patch("fraocme.cli.Stats")
+    def test_cmd_run_all_with_example_flag(self, mock_stats_class, mock_runner_class):
+        """Test running all days with --example flag."""
+        mock_runner = MagicMock()
+        mock_stats = MagicMock()
+        mock_runner_class.return_value = mock_runner
+        mock_stats_class.return_value = mock_stats
+        mock_runner.run_all.return_value = {1: {}, 2: {}}
+
+        args = MagicMock()
+        args.all = True
+        args.part = None
+        args.debug = False
+        args.no_stats = False
+        args.no_traceback = False
+        args.example = True
+
+        cmd_run(args)
+
+        mock_runner.run_all.assert_called_once_with(
+            parts=[1, 2], debug=False, show_traceback=True, use_example=True
+        )
+        mock_stats.save.assert_called_once()
 
 
 class TestCmdStats(unittest.TestCase):
@@ -346,6 +412,18 @@ class TestCreateCommand(unittest.TestCase):
         input_file = self.test_day_dir / "input.txt"
         self.assertTrue(input_file.exists())
         self.assertEqual(input_file.read_text(), "")
+
+    def test_create_command_creates_example_input_file(self):
+        """Test that create command creates example_input.txt file."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        example_input_file = self.test_day_dir / "example_input.txt"
+        self.assertTrue(example_input_file.exists())
+        self.assertEqual(example_input_file.read_text(), "")
 
     def test_create_command_creates_solution_file(self):
         """Test that create command creates solution.py file."""
@@ -457,6 +535,7 @@ class TestCreateCommand(unittest.TestCase):
 
         output_text = output.getvalue()
         self.assertIn("input.txt", output_text)
+        self.assertIn("example_input.txt", output_text)
         self.assertIn("solution.py", output_text)
 
     def test_create_command_different_day_numbers(self):
