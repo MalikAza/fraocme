@@ -86,11 +86,14 @@ class Day103(Solver):
             # Animate with trail
             print_grid_animated(
                 grid,
-                positions[:30],  # First 30 steps
+                positions[:50],  # First 50 steps
                 delay=0.1,  # 100ms per frame
                 trail_length=5,  # Show last 5 positions
                 separator=" ",
                 show_coords=True,
+                max_cols=10,
+                max_rows=10,
+                erase_after=True,  # Erase grid after animation
             )
 
         return len(set(positions))
@@ -123,6 +126,7 @@ class Day103(Solver):
                 delay=0.1,  # 100ms per frame
                 trail_length=8,  # Longer trail
                 separator=" ",
+                max_cols=25,
                 show_coords=True,
             )
 

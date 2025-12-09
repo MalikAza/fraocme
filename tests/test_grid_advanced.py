@@ -34,7 +34,6 @@ from fraocme.grid.printer import (
     print_grid_heatmap,
     print_grid_neighbors,
     print_grid_path,
-    print_grid_region,
 )
 from fraocme.grid.regions import find_regions, flood_fill
 
@@ -292,12 +291,6 @@ class TestPrinterFunctions(unittest.TestCase):
         grid2 = grid1.set(1, 1, "X")
         output = self._capture_print(lambda: print_grid_diff(grid1, grid2))
         self.assertIn("X", output)
-
-    def test_print_grid_region(self):
-        """Test region printing."""
-        region = flood_fill(self.char_grid, (0, 0), predicate=lambda v: v != "#")
-        output = self._capture_print(lambda: print_grid_region(self.char_grid, region))
-        self.assertIn("Region size", output)
 
     def test_print_grid_neighbors(self):
         """Test neighbors printing."""
@@ -566,21 +559,6 @@ class TestPrinterEdgeCases(unittest.TestCase):
         grid2 = Grid.from_chars("ab")
         output = self._capture_print(lambda: print_grid_diff(grid1, grid2))
         self.assertIn("Dimension mismatch", output)
-
-    def test_print_grid_region_with_coords(self):
-        """Region printing with coords and truncation."""
-        region = flood_fill(self.char_grid, (0, 0), predicate=lambda v: True)
-        output = self._capture_print(
-            lambda: print_grid_region(
-                self.char_grid,
-                region,
-                max_rows=1,
-                max_cols=2,
-                show_coords=True,
-            )
-        )
-        self.assertIn("Region size", output)
-        self.assertIn("...", output)
 
     def test_print_grid_neighbors_ring_two_coords(self):
         """Neighbors view with ring>1 and coords."""

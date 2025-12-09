@@ -124,7 +124,13 @@ class Solver(ABC):
     # ─────────────────────────────────────────────────────────
 
     def debug(self, *args, **kwargs) -> None:
-        """Print only if debug mode is enabled."""
+        """Print only if debug mode is enabled.
+        To not print function call results directly,
+            pass a callable as argument (lambda).
+
+        Example:
+            self.debug("Value is", lambda: compute_expensive_value())
+        """
         if not self.debug_enabled:
             return
 
