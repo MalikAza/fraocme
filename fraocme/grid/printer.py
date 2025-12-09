@@ -2,11 +2,62 @@ import time
 from statistics import median
 from typing import TYPE_CHECKING, Any, Callable
 
+from fraocme.grid.directions import Direction
+
 from ..ui.colors import c
 from .types import Position
 
 if TYPE_CHECKING:
     from .core import Grid
+
+
+def _calculate_viewport(
+    grid_width: int,
+    grid_height: int,
+    max_cols: int | None,
+    max_rows: int | None,
+    center: Position | None = None,
+) -> tuple[int, int, int, int]:
+    """
+    Calculate viewport bounds for displaying a region of the grid.
+
+    Args:
+        grid_width: Total grid width
+        grid_height: Total grid height
+        max_cols: Number of columns to display (None = all)
+        max_rows: Number of rows to display (None = all)
+        center: Optional position to center viewport on (x, y)
+
+    Returns:
+        Tuple (start_x, start_y, num_cols, num_rows) defining the viewport
+    """
+    # Use full dimensions if not constrained
+    num_cols = min(grid_width, max_cols) if max_cols else grid_width
+    num_rows = min(grid_height, max_rows) if max_rows else grid_height
+
+    # No centering: show top-left corner
+    if center is None:
+        return (0, 0, num_cols, num_rows)
+
+    # Center on position
+    cx, cy = center
+
+    # Calculate start position to center the viewport
+    start_x = cx - num_cols // 2
+    start_y = cy - num_rows // 2
+
+    # Clamp to grid boundaries
+    if start_x < 0:
+        start_x = 0
+    elif start_x + num_cols > grid_width:
+        start_x = max(0, grid_width - num_cols)
+
+    if start_y < 0:
+        start_y = 0
+    elif start_y + num_rows > grid_height:
+        start_y = max(0, grid_height - num_rows)
+
+    return (start_x, start_y, num_cols, num_rows)
 
 
 def print_grid(
@@ -16,6 +67,7 @@ def print_grid(
     max_rows: int | None = 25,
     max_cols: int | None = 80,
     show_coords: bool = False,
+    center: Position | None = None,
 ) -> None:
     """
     Print a 2D grid with optional position highlighting and size limits.
@@ -27,10 +79,13 @@ def print_grid(
         max_rows: Maximum rows to display (None = all). Default: 25
         max_cols: Maximum cols to display (None = all). Default: 80
         show_coords: Show row/column coordinates
+        center: Optional position to center viewport on (x, y)
 
     Example:
         grid = Grid.from_chars("abc\\ndef\\nghi")
         print_grid(grid, separator=' ', highlight={(1, 1)}, show_coords=True)
+        # 10x10 window centered on (5,5)
+        print_grid(grid, center=(5, 5), max_cols=10, max_rows=10)
     """
     # Get dimensions
     if hasattr(grid, "height"):
@@ -38,23 +93,25 @@ def print_grid(
     else:
         height, width = len(grid), len(grid[0]) if grid else 0
 
-    # Determine what to print
-    rows_to_print = min(height, max_rows) if max_rows else height
-    cols_to_print = min(width, max_cols) if max_cols else width
+    # Calculate viewport
+    start_x, start_y, num_cols, num_rows = _calculate_viewport(
+        width, height, max_cols, max_rows, center
+    )
 
-    truncated_rows = height > rows_to_print
-    truncated_cols = width > cols_to_print
+    truncated_rows = height > num_rows
+    truncated_cols = width > num_cols
 
     # Print header if coords enabled
-    if show_coords and cols_to_print > 0:
-        header = "   " if show_coords else ""
-        header += separator.join(str(x % 10) for x in range(cols_to_print))
+    if show_coords and num_cols > 0:
+        header = "   "
+        header += separator.join(str((start_x + x) % 10) for x in range(num_cols))
         if truncated_cols:
             header += f" {c.dim('...')}"
         print(c.dim(header))
 
     # Print rows
-    for y in range(rows_to_print):
+    for row_idx in range(num_rows):
+        y = start_y + row_idx
         line_parts = []
 
         # Row coordinate
@@ -62,7 +119,8 @@ def print_grid(
             line_parts.append(c.dim(f"{y:2} "))
 
         # Cells
-        for x in range(cols_to_print):
+        for col_idx in range(num_cols):
+            x = start_x + col_idx
             cell = grid[y][x] if isinstance(grid, list) else grid.at(x, y)
             cell_str = str(cell)
             if highlight and (x, y) in highlight:
@@ -76,10 +134,16 @@ def print_grid(
         print(separator.join(line_parts))
 
     # Footer if truncated
-    if truncated_rows:
-        footer = c.dim(
-            f"... ({height - rows_to_print} more rows, {height}x{width} total)"
-        )
+    if truncated_rows or truncated_cols:
+        if center:
+            footer = c.dim(
+                f"Showing {num_cols}x{num_rows} centered on {center} "
+                f"(grid: {width}x{height})"
+            )
+        else:
+            footer = c.dim(
+                f"... ({height - num_rows} more rows, {height}x{width} total)"
+            )
         print(footer)
 
 
@@ -90,6 +154,7 @@ def print_grid_heatmap(
     max_rows: int | None = 25,
     max_cols: int | None = 80,
     show_coords: bool = False,
+    center: Position | None = None,
 ) -> None:
     """
     Print grid with color-coded values (heat map visualization).
@@ -104,6 +169,7 @@ def print_grid_heatmap(
         max_rows: Maximum rows to display (None = all)
         max_cols: Maximum cols to display (None = all)
         show_coords: Show row/column coordinates
+        center: Optional position to center viewport on (x, y)
 
     Example:
         grid = Grid.from_ints("123\\n456\\n789")
@@ -123,16 +189,19 @@ def print_grid_heatmap(
 
     min_val, max_val, median_val = min(values), max(values), median(values)
 
-    # Determine what to print
-    rows_to_print = min(grid.height, max_rows) if max_rows else grid.height
-    cols_to_print = min(grid.width, max_cols) if max_cols else grid.width
+    # Calculate viewport
+    start_x, start_y, num_cols, num_rows = _calculate_viewport(
+        grid.width, grid.height, max_cols, max_rows, center
+    )
 
-    truncated_rows = grid.height > rows_to_print
-    truncated_cols = grid.width > cols_to_print
+    truncated_rows = grid.height > num_rows
+    truncated_cols = grid.width > num_cols
 
     # Print header
     if show_coords:
-        header = "   " + separator.join(str(x % 10) for x in range(cols_to_print))
+        header = "   " + separator.join(
+            str((start_x + x) % 10) for x in range(num_cols)
+        )
         if truncated_cols:
             header += f" {c.dim('...')}"
         print(c.dim(header))
@@ -145,13 +214,15 @@ def print_grid_heatmap(
     print(c.dim(legend))
 
     # Print rows
-    for y in range(rows_to_print):
+    for row_idx in range(num_rows):
+        y = start_y + row_idx
         line_parts = []
 
         if show_coords:
             line_parts.append(c.dim(f"{y:2} "))
 
-        for x in range(cols_to_print):
+        for col_idx in range(num_cols):
+            x = start_x + col_idx
             cell = grid.at(x, y)
             val = value_fn(cell) if value_fn else cell
 
@@ -168,12 +239,18 @@ def print_grid_heatmap(
 
         print(separator.join(line_parts))
 
-    if truncated_rows:
-        footer = (
-            f"... ({grid.height - rows_to_print} more rows, "
-            f"{grid.height}x{grid.width} total)"
-        )
-        print(c.dim(footer))
+    if truncated_rows or truncated_cols:
+        if center:
+            footer = c.dim(
+                f"Showing {num_cols}x{num_rows} centered on {center} "
+                f"(grid: {grid.width}x{grid.height})"
+            )
+        else:
+            footer = c.dim(
+                f"... ({grid.height - num_rows} more rows, "
+                f"{grid.height}x{grid.width} total)"
+            )
+        print(footer)
 
 
 def print_grid_path(
@@ -183,6 +260,7 @@ def print_grid_path(
     max_rows: int | None = 25,
     max_cols: int | None = 80,
     show_coords: bool = False,
+    center: Position | None = None,
 ) -> None:
     """
     Print grid with a path highlighted (shows direction arrows).
@@ -194,6 +272,7 @@ def print_grid_path(
         max_rows: Maximum rows to display
         max_cols: Maximum cols to display
         show_coords: Show coordinates
+        center: Optional position to center viewport on (x, y)
 
     Example:
         from fraocme.grid import bfs
@@ -204,27 +283,33 @@ def print_grid_path(
     path_set = set(path)
     path_indices = {pos: i for i, pos in enumerate(path)}
 
-    rows_to_print = min(grid.height, max_rows) if max_rows else grid.height
-    cols_to_print = min(grid.width, max_cols) if max_cols else grid.width
+    # Calculate viewport
+    start_x, start_y, num_cols, num_rows = _calculate_viewport(
+        grid.width, grid.height, max_cols, max_rows, center
+    )
 
-    truncated_rows = grid.height > rows_to_print
-    truncated_cols = grid.width > cols_to_print
+    truncated_rows = grid.height > num_rows
+    truncated_cols = grid.width > num_cols
 
     # Header
     if show_coords:
-        header = "   " + separator.join(str(x % 10) for x in range(cols_to_print))
+        header = "   " + separator.join(
+            str((start_x + x) % 10) for x in range(num_cols)
+        )
         if truncated_cols:
             header += f" {c.dim('...')}"
         print(c.dim(header))
 
     # Print rows
-    for y in range(rows_to_print):
+    for row_idx in range(num_rows):
+        y = start_y + row_idx
         line_parts = []
 
         if show_coords:
             line_parts.append(c.dim(f"{y:2} "))
 
-        for x in range(cols_to_print):
+        for col_idx in range(num_cols):
+            x = start_x + col_idx
             pos = (x, y)
             cell = grid.at(x, y)
 
@@ -265,12 +350,18 @@ def print_grid_path(
 
         print(separator.join(line_parts))
 
-    if truncated_rows:
-        footer = (
-            f"... ({grid.height - rows_to_print} more rows, "
-            f"{grid.height}x{grid.width} total)"
-        )
-        print(c.dim(footer))
+    if truncated_rows or truncated_cols:
+        if center:
+            footer = c.dim(
+                f"Showing {num_cols}x{num_rows} centered on {center} "
+                f"(grid: {grid.width}x{grid.height})"
+            )
+        else:
+            footer = c.dim(
+                f"... ({grid.height - num_rows} more rows, "
+                f"{grid.height}x{grid.width} total)"
+            )
+        print(footer)
 
     print(c.dim(f"Path length: {len(path)} steps"))
 
@@ -282,6 +373,7 @@ def print_grid_diff(
     max_rows: int | None = 25,
     max_cols: int | None = 80,
     show_coords: bool = False,
+    center: Position | None = None,
 ) -> None:
     """
     Print difference between two grids (highlights changes).
@@ -293,6 +385,7 @@ def print_grid_diff(
         max_rows: Maximum rows to display
         max_cols: Maximum cols to display
         show_coords: Show coordinates
+        center: Optional position to center viewport on (x, y)
 
     Example:
         original = Grid.from_chars("abc\\ndef\\nghi")
@@ -303,29 +396,35 @@ def print_grid_diff(
         print(c.error(f"Dimension mismatch: {grid1.dimensions} vs {grid2.dimensions}"))
         return
 
-    rows_to_print = min(grid1.height, max_rows) if max_rows else grid1.height
-    cols_to_print = min(grid1.width, max_cols) if max_cols else grid1.width
+    # Calculate viewport
+    start_x, start_y, num_cols, num_rows = _calculate_viewport(
+        grid1.width, grid1.height, max_cols, max_rows, center
+    )
 
-    truncated_rows = grid1.height > rows_to_print
-    truncated_cols = grid1.width > cols_to_print
+    truncated_rows = grid1.height > num_rows
+    truncated_cols = grid1.width > num_cols
 
     changes = 0
 
     # Header
     if show_coords:
-        header = "   " + separator.join(str(x % 10) for x in range(cols_to_print))
+        header = "   " + separator.join(
+            str((start_x + x) % 10) for x in range(num_cols)
+        )
         if truncated_cols:
             header += f" {c.dim('...')}"
         print(c.dim(header))
 
     # Print rows
-    for y in range(rows_to_print):
+    for row_idx in range(num_rows):
+        y = start_y + row_idx
         line_parts = []
 
         if show_coords:
             line_parts.append(c.dim(f"{y:2} "))
 
-        for x in range(cols_to_print):
+        for col_idx in range(num_cols):
+            x = start_x + col_idx
             cell1 = grid1.at(x, y)
             cell2 = grid2.at(x, y)
 
@@ -342,86 +441,20 @@ def print_grid_diff(
 
         print(separator.join(line_parts))
 
-    if truncated_rows:
-        footer = (
-            f"... ({grid1.height - rows_to_print} more rows, "
-            f"{grid1.height}x{grid1.width} total)"
-        )
-        print(c.dim(footer))
+    if truncated_rows or truncated_cols:
+        if center:
+            footer = c.dim(
+                f"Showing {num_cols}x{num_rows} centered on {center} "
+                f"(grid: {grid1.width}x{grid1.height})"
+            )
+        else:
+            footer = c.dim(
+                f"... ({grid1.height - num_rows} more rows, "
+                f"{grid1.height}x{grid1.width} total)"
+            )
+        print(footer)
 
     print(c.dim(f"Changes: {changes} cells"))
-
-
-def print_grid_region(
-    grid: "Grid",
-    region: Any,  # Region type
-    separator: str = " ",
-    max_rows: int | None = 25,
-    max_cols: int | None = 80,
-    show_coords: bool = False,
-) -> None:
-    """
-    Print grid with a region highlighted.
-
-    Args:
-        grid: Grid to print
-        region: Region object with .positions attribute
-        separator: String between cells
-        max_rows: Maximum rows to display
-        max_cols: Maximum cols to display
-        show_coords: Show coordinates
-
-    Example:
-        from fraocme.grid import flood_fill
-        region = grid.flood_fill((0, 0), '#')
-        print_grid_region(grid, region)
-    """
-    region_positions = region.positions if hasattr(region, "positions") else set(region)
-
-    rows_to_print = min(grid.height, max_rows) if max_rows else grid.height
-    cols_to_print = min(grid.width, max_cols) if max_cols else grid.width
-
-    truncated_rows = grid.height > rows_to_print
-    truncated_cols = grid.width > cols_to_print
-
-    # Header
-    if show_coords:
-        header = "   " + separator.join(str(x % 10) for x in range(cols_to_print))
-        if truncated_cols:
-            header += f" {c.dim('...')}"
-        print(c.dim(header))
-
-    print(c.dim(f"Region size: {len(region_positions)} cells"))
-
-    # Print rows
-    for y in range(rows_to_print):
-        line_parts = []
-
-        if show_coords:
-            line_parts.append(c.dim(f"{y:2} "))
-
-        for x in range(cols_to_print):
-            pos = (x, y)
-            cell = grid.at(x, y)
-
-            if pos in region_positions:
-                cell_str = c.cyan(str(cell))
-            else:
-                cell_str = c.dim(str(cell))
-
-            line_parts.append(cell_str)
-
-        if truncated_cols:
-            line_parts.append(c.dim("..."))
-
-        print(separator.join(line_parts))
-
-    if truncated_rows:
-        footer = (
-            f"... ({grid.height - rows_to_print} more rows, "
-            f"{grid.height}x{grid.width} total)"
-        )
-        print(c.dim(footer))
 
 
 def print_grid_neighbors(
@@ -436,10 +469,11 @@ def print_grid_neighbors(
 ) -> None:
     """
     Print grid with neighbors of a position highlighted.
+    Viewport is automatically centered on pos.
 
     Args:
         grid: Grid to print
-        pos: Center position
+        pos: Center position (viewport will be centered here)
         ring: Neighbor ring distance (1=immediate, 2=next layer, etc.)
         include_diagonals: Include diagonal neighbors
         separator: String between cells
@@ -454,15 +488,19 @@ def print_grid_neighbors(
     neighbors = grid.get_neighbors(pos, ring=ring, include_diagonals=include_diagonals)
     neighbor_set = set(neighbors)
 
-    rows_to_print = min(grid.height, max_rows) if max_rows else grid.height
-    cols_to_print = min(grid.width, max_cols) if max_cols else grid.width
+    # Calculate viewport centered on pos
+    start_x, start_y, num_cols, num_rows = _calculate_viewport(
+        grid.width, grid.height, max_cols, max_rows, center=pos
+    )
 
-    truncated_rows = grid.height > rows_to_print
-    truncated_cols = grid.width > cols_to_print
+    truncated_rows = grid.height > num_rows
+    truncated_cols = grid.width > num_cols
 
     # Header
     if show_coords:
-        header = "   " + separator.join(str(x % 10) for x in range(cols_to_print))
+        header = "   " + separator.join(
+            str((start_x + x) % 10) for x in range(num_cols)
+        )
         if truncated_cols:
             header += f" {c.dim('...')}"
         print(c.dim(header))
@@ -472,13 +510,15 @@ def print_grid_neighbors(
     print(c.dim(info))
 
     # Print rows
-    for y in range(rows_to_print):
+    for row_idx in range(num_rows):
+        y = start_y + row_idx
         line_parts = []
 
         if show_coords:
             line_parts.append(c.dim(f"{y:2} "))
 
-        for x in range(cols_to_print):
+        for col_idx in range(num_cols):
+            x = start_x + col_idx
             cell_pos = (x, y)
             cell = grid.at(x, y)
 
@@ -496,12 +536,12 @@ def print_grid_neighbors(
 
         print(separator.join(line_parts))
 
-    if truncated_rows:
-        footer = (
-            f"... ({grid.height - rows_to_print} more rows, "
-            f"{grid.height}x{grid.width} total)"
+    if truncated_rows or truncated_cols:
+        footer = c.dim(
+            f"Showing {num_cols}x{num_rows} centered on {pos} "
+            f"(grid: {grid.width}x{grid.height})"
         )
-        print(c.dim(footer))
+        print(footer)
 
 
 def print_grid_animated(
@@ -515,9 +555,11 @@ def print_grid_animated(
     trail_length: int = 0,
     show_step_count: bool = True,
     max_iterations: int = 200,
+    erase_after: bool = False,
 ) -> None:
     """
     Animate movement through grid positions (clears console each frame).
+    Viewport automatically centers on current position.
 
     Perfect for visualizing guard patrols, pathfinding, or any sequential movement.
 
@@ -533,19 +575,21 @@ def print_grid_animated(
         show_step_count: Show current step number
         max_iterations: Maximum frames to display (default: 200). If positions > max,
                         frames are skipped to stay within limit
+        erase_after: Erase animation from console after completion (default: False)
 
     Example:
         # Day 1 guard patrol animation
         grid = Grid.from_chars(raw_input)
         path = simulate_guard_patrol(grid)
         print_grid_animated(grid, path, delay=0.05, trail_length=10)
+        # Multiple animations: use erase_after=True to prevent stacking
+        print_grid_animated(
+                            grid, path2, delay=0.05,
+                            erase_after=True)
     """
     if not positions:
         print(c.dim("(no positions to animate)"))
         return
-
-    rows_to_print = min(grid.height, max_rows) if max_rows else grid.height
-    cols_to_print = min(grid.width, max_cols) if max_cols else grid.width
 
     # Calculate frame skipping if needed
     total_positions = len(positions)
@@ -564,14 +608,23 @@ def print_grid_animated(
     else:
         frame_indices = list(range(total_positions))
 
-    total_lines = rows_to_print
-    if show_coords:
-        total_lines += 1  # Header line
-    if show_step_count:
-        total_lines += 1  # Step counter line
-
     for frame_num, step in enumerate(frame_indices):
         current_pos = positions[step]
+
+        # Calculate viewport centered on current position
+        start_x, start_y, num_cols, num_rows = _calculate_viewport(
+            grid.width, grid.height, max_cols, max_rows, center=current_pos
+        )
+
+        # Calculate total lines for cursor repositioning
+        total_lines = num_rows
+        if show_coords:
+            max_col = start_x + num_cols - 1
+            total_lines += 1  # Ones header line (always)
+            if max_col >= 10:
+                total_lines += 1  # Upper digits line
+        if show_step_count:
+            total_lines += 1  # Step counter line
 
         # Move cursor up to overwrite previous frame (except first frame)
         if frame_num > 0:
@@ -584,22 +637,41 @@ def print_grid_animated(
             trail_start = max(0, step - trail_length)
             trail_positions = set(positions[trail_start:step])
 
-        # Print header
-        if show_coords:
-            header = "   " + separator.join(str(x % 10) for x in range(cols_to_print))
-            print(c.dim(header))
-
+        # Print step counter first (above everything)
         if show_step_count:
             print(c.dim(f"Step {step + 1}/{total_positions} - Position: {current_pos}"))
 
+        # Print column headers
+        if show_coords:
+            # Build upper digits line (tens, hundreds, etc.)
+            max_col = start_x + num_cols - 1
+            if max_col >= 10:
+                upper_parts = ["   "]  # Row number padding
+                for x in range(num_cols):
+                    col_num = start_x + x
+                    if col_num % 10 == 0 and col_num > 0:
+                        # Show the upper digits at multiples of 10
+                        upper_parts.append(str(col_num // 10))
+                    else:
+                        upper_parts.append(" ")
+                print(c.dim(separator.join(upper_parts)))
+
+            # Ones place header (always shown)
+            ones_header = "   " + separator.join(
+                str((start_x + x) % 10) for x in range(num_cols)
+            )
+            print(c.dim(ones_header))
+
         # Print rows
-        for y in range(rows_to_print):
+        for row_idx in range(num_rows):
+            y = start_y + row_idx
             line_parts = []
 
             if show_coords:
                 line_parts.append(c.dim(f"{y:2} "))
 
-            for x in range(cols_to_print):
+            for col_idx in range(num_cols):
+                x = start_x + col_idx
                 pos = (x, y)
                 cell = grid.at(x, y)
 
@@ -620,13 +692,27 @@ def print_grid_animated(
         # Sleep before next frame
         time.sleep(delay)
 
-    print(c.success(f"\n Animation complete! ({total_positions} steps)"))
+    if erase_after:
+        # Calculate lines to clear (same as total_lines used during animation)
+        total_lines = num_rows
+        if show_coords:
+            max_col = start_x + num_cols - 1
+            total_lines += 1  # Ones header line (always)
+            if max_col >= 10:
+                total_lines += 1  # Upper digits line
+        if show_step_count:
+            total_lines += 1  # Step counter line
+        total_lines += 1  # For completion message
+        # Move cursor up and clear lines
+        print(f"\033[{total_lines}A\033[J", end="")
+    else:
+        print(c.success(f"\n Animation complete! ({total_positions} steps)"))
 
 
 def print_grid_animated_with_direction(
     grid: "Grid",
     positions: list[Position],
-    directions: list[Any] | None = None,
+    directions: list[Direction] | None = None,
     delay: float = 0.1,
     separator: str = " ",
     max_rows: int | None = 50,
@@ -635,9 +721,12 @@ def print_grid_animated_with_direction(
     trail_length: int = 0,
     show_step_count: bool = True,
     max_iterations: int = 200,
+    center: Position | None = None,
+    erase_after: bool = False,
 ) -> None:
     """
     Animate movement with directional arrows (for guard patrol simulations).
+    Viewport can be centered on current position.
 
     Args:
         grid: Grid to display
@@ -652,12 +741,19 @@ def print_grid_animated_with_direction(
         show_step_count: Show current step
         max_iterations: Maximum frames to display (default: 200). If positions > max,
                         frames are skipped to stay within limit
+        center: Optional position to center viewport on (x, y)
+        erase_after: Erase animation after completion (default: False)
 
     Example:
         # With direction tracking
         path = [(0,0), (1,0), (2,0)]
         dirs = [EAST, EAST, EAST]
         print_grid_animated_with_direction(grid, path, dirs, delay=0.05)
+        # Multiple animations: use erase_after=True to prevent stacking
+        print_grid_animated_with_direction(
+                                        grid, path2, dirs2, delay=0.05,
+                                        erase_after=True
+                                        )
     """
     if not positions:
         print(c.dim("(no positions to animate)"))
@@ -674,9 +770,6 @@ def print_grid_animated_with_direction(
         "southwest": "\\",
         "northwest": "/",
     }
-
-    rows_to_print = min(grid.height, max_rows) if max_rows else grid.height
-    cols_to_print = min(grid.width, max_cols) if max_cols else grid.width
 
     total_positions = len(positions)
     if total_positions > max_iterations:
@@ -695,14 +788,23 @@ def print_grid_animated_with_direction(
     else:
         frame_indices = list(range(total_positions))
 
-    total_lines = rows_to_print
-    if show_coords:
-        total_lines += 1  # Header line
-    if show_step_count:
-        total_lines += 1  # Step counter line
-
     for frame_num, step in enumerate(frame_indices):
         current_pos = positions[step]
+
+        # Calculate viewport centered on current position
+        start_x, start_y, num_cols, num_rows = _calculate_viewport(
+            grid.width, grid.height, max_cols, max_rows, center=center or current_pos
+        )
+
+        # Calculate total lines for cursor repositioning
+        total_lines = num_rows
+        if show_coords:
+            max_col = start_x + num_cols - 1
+            total_lines += 1  # Ones header line (always)
+            if max_col >= 10:
+                total_lines += 1  # Upper digits line
+        if show_step_count:
+            total_lines += 1  # Step counter line
 
         # Move cursor up to overwrite previous frame (except first frame)
         if frame_num > 0:
@@ -720,19 +822,11 @@ def print_grid_animated_with_direction(
             trail_start = max(0, step - trail_length)
             trail_positions = set(positions[trail_start:step])
 
-        # Print header
-        if show_coords:
-            header = "   " + separator.join(str(x % 10) for x in range(cols_to_print))
-            print(c.dim(header))
-
+        # Print step counter first (above everything)
         if show_step_count:
             dir_text = ""
             if current_dir:
-                dir_name = (
-                    current_dir.name
-                    if hasattr(current_dir, "name")
-                    else str(current_dir)
-                )
+                dir_name = current_dir.name
                 dir_text = f" - Facing: {dir_name}"
             print(
                 c.dim(
@@ -741,25 +835,44 @@ def print_grid_animated_with_direction(
                 )
             )
 
+        # Print column headers
+        if show_coords:
+            # Build upper digits line (tens, hundreds, etc.)
+            max_col = start_x + num_cols - 1
+            if max_col >= 10:
+                upper_parts = ["  "]  # Row number padding
+                for x in range(num_cols):
+                    col_num = start_x + x
+                    if col_num % 10 == 0 and col_num > 0:
+                        # Show the upper digits at multiples of 10
+                        upper_parts.append(str(col_num // 10))
+                    else:
+                        upper_parts.append(" ")
+                print(c.dim(separator.join(upper_parts)))
+
+            # Ones place header (always shown)
+            ones_header = "   " + separator.join(
+                str((start_x + x) % 10) for x in range(num_cols)
+            )
+            print(c.dim(ones_header))
+
         # Print rows
-        for y in range(rows_to_print):
+        for row_idx in range(num_rows):
+            y = start_y + row_idx
             line_parts = []
 
             if show_coords:
                 line_parts.append(c.dim(f"{y:2} "))
 
-            for x in range(cols_to_print):
+            for col_idx in range(num_cols):
+                x = start_x + col_idx
                 pos = (x, y)
                 cell = grid.at(x, y)
 
                 if pos == current_pos:
                     # Show arrow for current direction
                     if current_dir:
-                        dir_name = (
-                            current_dir.name
-                            if hasattr(current_dir, "name")
-                            else str(current_dir).lower()
-                        )
+                        dir_name = current_dir.name
                         arrow = direction_arrows.get(dir_name, "@")
                         cell_str = c.cyan(c.bold(arrow))
                     else:
@@ -777,4 +890,18 @@ def print_grid_animated_with_direction(
 
         time.sleep(delay)
 
-    print(c.success(f"\n Animation complete! ({total_positions} steps)"))
+    if erase_after:
+        # Calculate lines to clear (same as total_lines used during animation)
+        total_lines = num_rows
+        if show_coords:
+            max_col = start_x + num_cols - 1
+            total_lines += 1  # Ones header line (always)
+            if max_col >= 10:
+                total_lines += 1  # Upper digits line
+        if show_step_count:
+            total_lines += 1  # Step counter line
+        total_lines += 1  # For completion message
+        # Move cursor up and clear lines
+        print(f"\033[{total_lines}A\033[J", end="")
+    else:
+        print(c.success(f"\n Animation complete! ({total_positions} steps)"))
