@@ -32,6 +32,33 @@ class TestGridParser(unittest.TestCase):
         self.assertEqual(grid.at(0, 0), 10)
         self.assertEqual(grid.at(2, 1), 60)
 
+    def test_create_with_default_value(self):
+        """Test creating grid with default value."""
+        grid = Grid.create(3, 2, ".")
+        self.assertEqual(grid.dimensions, (3, 2))
+        self.assertEqual(grid.at(0, 0), ".")
+        self.assertEqual(grid.at(2, 1), ".")
+        # Check all cells have the default value
+        for y in range(2):
+            for x in range(3):
+                self.assertEqual(grid.at(x, y), ".")
+
+    def test_create_with_custom_value(self):
+        """Test creating grid with custom value."""
+        grid = Grid.create(2, 3, 0)
+        self.assertEqual(grid.dimensions, (2, 3))
+        self.assertEqual(grid.at(0, 0), 0)
+        self.assertEqual(grid.at(1, 2), 0)
+
+    def test_create_invalid_dimensions(self):
+        """Test creating grid with invalid dimensions."""
+        with self.assertRaises(ValueError):
+            Grid.create(0, 5, ".")
+        with self.assertRaises(ValueError):
+            Grid.create(5, 0, ".")
+        with self.assertRaises(ValueError):
+            Grid.create(-1, 5, ".")
+
 
 class TestGridPrinter(unittest.TestCase):
     """Test grid printer functions."""
