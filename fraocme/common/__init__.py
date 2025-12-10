@@ -1,4 +1,4 @@
-from .parser import ints, key_ints, lines, mapped, ranges, sections
+from .parser import coordinates, ints, key_ints, lines, mapped, ranges, sections
 from .printer import (
     print_dict_head,
     print_dict_row,
@@ -29,6 +29,7 @@ from .utils import (
 )
 
 __all__ = [
+    "coordinates",
     "sections",
     "lines",
     "ints",
