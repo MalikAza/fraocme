@@ -122,6 +122,58 @@ class TestCommonParser(unittest.TestCase):
         result = parser.mapped(raw, lambda line: tuple(map(int, line.split(","))))
         self.assertEqual(result, [(1, 2), (3, 4)])
 
+    def test_coordinates(self):
+        raw = "10,20\n30,40\n50,60"
+        self.assertEqual(parser.coordinates(raw), [(10, 20), (30, 40), (50, 60)])
+
+    def test_coordinates_3d(self):
+        raw = "1,2,3\n4,5,6\n7,8,9"
+        self.assertEqual(parser.coordinates(raw), [(1, 2, 3), (4, 5, 6), (7, 8, 9)])
+
+    def test_coordinates_with_delimiter(self):
+        raw = "10 20\n30 40"
+        self.assertEqual(parser.coordinates(raw, delimiter=" "), [(10, 20), (30, 40)])
+
+    def test_coordinates_with_float(self):
+        raw = "1.5,2.5\n3.5,4.5"
+        self.assertEqual(
+            parser.coordinates(raw, value_type=float), [(1.5, 2.5), (3.5, 4.5)]
+        )
+
+    def test_coordinates_inline_space_separated(self):
+        """Test inline coordinates separated by spaces: '1,2 3,4 5,6'"""
+        raw = "1,2 3,4 5,6"
+        self.assertEqual(
+            parser.coordinates(raw, coord_delimiter=" "), [(1, 2), (3, 4), (5, 6)]
+        )
+
+    def test_coordinates_inline_dash_notation(self):
+        """Test inline coordinates with dash notation: '1-2 3-4 5-6'"""
+        raw = "1-2 3-4 5-6"
+        self.assertEqual(
+            parser.coordinates(raw, delimiter="-", coord_delimiter=" "),
+            [(1, 2), (3, 4), (5, 6)],
+        )
+
+    def test_coordinates_inline_comma_separated(self):
+        """Test inline coordinates separated by commas: '1-2,3-4,5-6'"""
+        raw = "1-2,3-4,5-6"
+        self.assertEqual(
+            parser.coordinates(raw, delimiter="-", coord_delimiter=","),
+            [(1, 2), (3, 4), (5, 6)],
+        )
+
+    def test_coordinates_named_with_mapped(self):
+        """Test parsing named coordinates like 'x=1, y=2, z=3' using mapped."""
+        import re
+
+        raw = "x=10, y=20, z=30\nx=40, y=50, z=60"
+        result = parser.mapped(
+            raw,
+            lambda line: tuple(int(x) for x in re.findall(r"-?\d+", line)),
+        )
+        self.assertEqual(result, [(10, 20, 30), (40, 50, 60)])
+
 
 class TestCommonUtils(unittest.TestCase):
     def test_frequencies_and_all_equal(self):
