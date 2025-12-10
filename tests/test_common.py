@@ -160,6 +160,68 @@ class TestCommonUtils(unittest.TestCase):
         self.assertEqual(common_utils.lcm(3, 4, 5), 60)
         self.assertEqual(common_utils.from_digits([9, 8, 7]), 987)
 
+    def test_euclidean_distance_2d(self):
+        """Test 2D Euclidean distance."""
+        # Basic 3-4-5 triangle
+        self.assertEqual(common_utils.euclidean_distance((0, 0), (3, 4)), 5.0)
+        # Same point
+        self.assertEqual(common_utils.euclidean_distance((5, 5), (5, 5)), 0.0)
+        # With floats
+        self.assertEqual(common_utils.euclidean_distance((1.5, 2.5), (4.5, 6.5)), 5.0)
+
+    def test_euclidean_distance_3d(self):
+        """Test 3D Euclidean distance (junction boxes)."""
+        # Test with junction box coordinates
+        # d = sqrt((57-162)^2 + (618-817)^2 + (57-812)^2)
+        # d = sqrt(11025 + 39601 + 570025) = sqrt(620651) = 787.814064
+        dist = common_utils.euclidean_distance((162, 817, 812), (57, 618, 57))
+        self.assertAlmostEqual(dist, 787.814064, places=5)
+
+        # Another junction box pair
+        dist2 = common_utils.euclidean_distance((162, 817, 812), (906, 360, 560))
+        self.assertAlmostEqual(dist2, 908.784353, places=5)
+
+    def test_euclidean_distance_different_dimensions(self):
+        """Test that different dimensions raise ValueError."""
+        with self.assertRaises(ValueError) as context:
+            common_utils.euclidean_distance((1, 2), (1, 2, 3))
+        self.assertIn("same dimensions", str(context.exception))
+
+    def test_squared_euclidean_distance_2d(self):
+        """Test 2D squared Euclidean distance."""
+        # Basic 3-4-5 triangle (squared)
+        self.assertEqual(common_utils.squared_euclidean_distance((0, 0), (3, 4)), 25.0)
+        # Same point
+        self.assertEqual(common_utils.squared_euclidean_distance((5, 5), (5, 5)), 0.0)
+
+    def test_squared_euclidean_distance_3d(self):
+        """Test 3D squared Euclidean distance."""
+        # Junction box coordinates
+        # (57-162)^2 + (618-817)^2 + (57-812)^2 = 11025 + 39601 + 570025 = 620651
+        sq_dist = common_utils.squared_euclidean_distance(
+            (162, 817, 812), (57, 618, 57)
+        )
+        self.assertEqual(sq_dist, 620651.0)
+
+    def test_squared_euclidean_distance_comparison(self):
+        """Test using squared distance for comparison (optimization)."""
+        box1 = (162, 817, 812)
+        box2 = (57, 618, 57)
+        box3 = (906, 360, 560)
+
+        # Find which box is closer to box1
+        dist_to_box2 = common_utils.squared_euclidean_distance(box1, box2)
+        dist_to_box3 = common_utils.squared_euclidean_distance(box1, box3)
+
+        # box2 should be closer
+        self.assertLess(dist_to_box2, dist_to_box3)
+
+    def test_squared_euclidean_distance_different_dimensions(self):
+        """Test that different dimensions raise ValueError for squared distance."""
+        with self.assertRaises(ValueError) as context:
+            common_utils.squared_euclidean_distance((1, 2), (1, 2, 3))
+        self.assertIn("same dimensions", str(context.exception))
+
     def test_range_helpers(self):
         self.assertTrue(common_utils.ranges_overlap((1, 5), (5, 10)))
         self.assertFalse(common_utils.ranges_overlap((1, 3), (4, 6)))
