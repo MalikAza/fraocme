@@ -88,6 +88,7 @@ fraocme run --all              # Run all days (marathon mode! 🏃)
 ```bash
 fraocme stats                  # Show all stats
 fraocme stats 1                # Show stats for day 1
+```
 ## 🎁 Parsers & Utilities
 
 Common parsing patterns are built right in:
@@ -98,6 +99,7 @@ from fraocme.common.parser import (
     ints,       # Parse integers (one per line)
     digits,     # Parse digits into lists [[1,2,3], [4,5,6]]
     sections,   # Split by blank lines
+```
 ## 🐛 Debugging
 
 Enable debug output with the `--debug` flag:
@@ -112,6 +114,7 @@ self.debug(lambda: expensive_visualization(grid))  # Only computed when --debug 
 from fraocme.common.printer import (
     print_dict_row,      # Pretty-print dictionaries
     print_ranges,        # Show range summaries
+```
 ## 🧪 Testing
 
 ```bash
