@@ -59,6 +59,34 @@ class Grid(Generic[T]):
         self._width = len(tuple_data[0]) if tuple_data else 0
         self._height = len(tuple_data)
 
+    @classmethod
+    def create(cls, width: int, height: int, default_value: T = ".") -> "Grid[T]":
+        """
+        Create a new grid with specified dimensions filled with a default value.
+
+        Args:
+            width: Number of columns
+            height: Number of rows
+            default_value: Value to fill the grid with (default: ".")
+
+        Returns:
+            New Grid instance filled with the default value
+
+        Raises:
+            ValueError: If width or height is less than 1
+
+        Example:
+            grid = Grid.create(3, 2, ".")
+            # Creates a 3x2 grid filled with "."
+            # . . .
+            # . . .
+        """
+        if width < 1 or height < 1:
+            raise ValueError("Width and height must be at least 1")
+
+        data = tuple(tuple(default_value for _ in range(width)) for _ in range(height))
+        return cls(data)
+
     @property
     def width(self) -> int:
         """Get grid width (number of columns)."""
