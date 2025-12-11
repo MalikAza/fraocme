@@ -1,3 +1,4 @@
+import re
 import sys
 import unittest
 from io import StringIO
@@ -61,6 +62,15 @@ class TestGridParser(unittest.TestCase):
 
 
 class TestGridPrinter(unittest.TestCase):
+    def strip_row_header(self, s):
+        parts = s.lstrip().split(None, 1)
+        if len(parts) == 2 and parts[0].isdigit():
+            return re.sub(r"^[^\w\d]+", "", parts[1])
+        return s
+
+    def strip_ansi(self, s):
+        return re.sub(r"\x1b\[[0-9;]*m", "", s)
+
     """Test grid printer functions."""
 
     def test_print_grid_basic(self):
@@ -73,8 +83,10 @@ class TestGridPrinter(unittest.TestCase):
         sys.stdout = sys.__stdout__
 
         output = captured_output.getvalue().strip().split("\n")
-        self.assertEqual(output[0], "ab")
-        self.assertEqual(output[1], "cd")
+        # First line is info, second is col header, then grid rows
+        self.assertIn("Grid", self.strip_ansi(output[0]))
+        self.assertEqual(self.strip_row_header(self.strip_ansi(output[2])), "ab")
+        self.assertEqual(self.strip_row_header(self.strip_ansi(output[3])), "cd")
 
     def test_print_grid_with_separator(self):
         """Test printing grid with separator."""
@@ -86,8 +98,9 @@ class TestGridPrinter(unittest.TestCase):
         sys.stdout = sys.__stdout__
 
         output = captured_output.getvalue().strip().split("\n")
-        self.assertEqual(output[0], "a b")
-        self.assertEqual(output[1], "c d")
+        self.assertIn("Grid", self.strip_ansi(output[0]))
+        self.assertEqual(self.strip_row_header(self.strip_ansi(output[2])), "a b")
+        self.assertEqual(self.strip_row_header(self.strip_ansi(output[3])), "c d")
 
     def test_print_grid_with_numbers(self):
         """Test printing grid with numbers."""
@@ -99,8 +112,9 @@ class TestGridPrinter(unittest.TestCase):
         sys.stdout = sys.__stdout__
 
         output = captured_output.getvalue().strip().split("\n")
-        self.assertEqual(output[0], "1,2")
-        self.assertEqual(output[1], "3,4")
+        self.assertIn("Grid", self.strip_ansi(output[0]))
+        self.assertEqual(self.strip_row_header(self.strip_ansi(output[2])), "1,2")
+        self.assertEqual(self.strip_row_header(self.strip_ansi(output[3])), "3,4")
 
     def test_print_grid_with_highlight(self):
         """Test printing grid with highlighted positions."""
@@ -126,7 +140,8 @@ class TestGridPrinter(unittest.TestCase):
         sys.stdout = sys.__stdout__
 
         output = captured_output.getvalue().strip()
-        self.assertEqual(output, "")
+        # Should print only the info line for empty grid
+        self.assertIn("Grid", output)
 
 
 class TestGridCore(unittest.TestCase):

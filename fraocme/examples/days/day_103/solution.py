@@ -7,6 +7,7 @@ Demonstrates grid animation functions for visualizing movement and simulations.
 from fraocme import Solver
 from fraocme.grid import NORTH, Grid, turn_right
 from fraocme.grid.printer import (
+    print_grid,
     print_grid_animated,
     print_grid_animated_with_direction,
 )
@@ -67,6 +68,7 @@ class Day103(Solver):
         """
         Demonstrate basic animation (position only).
         """
+        self.debug(lambda: print_grid(grid, separator=" ", max_cols=15, max_rows=10))
         self.debug(c.bold("\n=== Part 1: Basic Animation ===\n"))
 
         # Simulate patrol
