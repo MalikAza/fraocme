@@ -13,7 +13,7 @@ from fraocme import Solver
 from fraocme.common import RangeMode
 from fraocme.common.parser import ranges, sections
 from fraocme.common.printer import print_ranges
-from fraocme.common.utils import (
+from fraocme.common.range_utils import (
     merge_ranges,
     range_coverage,
     range_intersection,

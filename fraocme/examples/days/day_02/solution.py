@@ -14,7 +14,7 @@ Demonstrates sequence manipulation functions from fraocme.common.utils:
 
 from fraocme import Solver
 from fraocme.common.parser import ints, lines, sections
-from fraocme.common.utils import (
+from fraocme.common.sequence_utils import (
     all_equal,
     chunks,
     flatten,

@@ -87,6 +87,43 @@ class Grid(Generic[T]):
         data = tuple(tuple(default_value for _ in range(width)) for _ in range(height))
         return cls(data)
 
+    @classmethod
+    def from_positions(
+        cls,
+        positions: set[tuple[int, int]] | list[tuple[int, int]],
+        fill: T = "#",
+        default: T = ".",
+    ) -> "Grid[T]":
+        """
+        Create a grid from a set of positions, filling those positions with 'fill', others with 'default'.
+
+        Args:
+            positions: Set or list of (x, y) positions
+            fill: Value to fill at given positions (default: "#")
+            default: Value for other cells (default: ".")
+
+        Returns:
+            Grid instance covering the minimal bounding box of positions
+
+        Example:
+            Grid.from_positions({(1, 1), (2, 2)}, fill="*")
+        """
+        if not positions:
+            return cls.create(1, 1, default)
+        xs = [x for x, y in positions]
+        ys = [y for x, y in positions]
+        min_x, max_x = min(xs), max(xs)
+        min_y, max_y = min(ys), max(ys)
+        # Build grid data
+        data = []
+        pos_set = set(positions)
+        for y in range(min_y, max_y + 1):
+            row = []
+            for x in range(min_x, max_x + 1):
+                row.append(fill if (x, y) in pos_set else default)
+            data.append(row)
+        return cls(data)
+
     @property
     def width(self) -> int:
         """Get grid width (number of columns)."""
