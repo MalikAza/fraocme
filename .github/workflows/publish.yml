@@ -1,0 +1,42 @@
+name: Publish Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_to:
+        description: 'Publish to TestPyPI or PyPI'
+        required: true
+        type: choice
+        options:
+          - testpypi
+          - pypi
+
+jobs:
+  publish:
+    name: Publish to ${{ github.event.inputs.publish_to }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+
+      - name: Build distribution
+        run: |
+          uv build
+
+      - name: Publish to TestPyPI
+        if: github.event.inputs.publish_to == 'testpypi'
+        run: |
+          uv publish --index testpypi --token '${{ secrets.TESTPYPI_TOKEN }}'
+
+      - name: Publish to PyPI
+        if: github.event.inputs.publish_to == 'pypi'
+        run: |
+          uv publish --index pypi --token '${{ secrets.PYPI_TOKEN }}'
