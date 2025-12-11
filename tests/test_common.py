@@ -109,13 +109,6 @@ class TestCommonParser(unittest.TestCase):
         self.assertEqual(parser.lines(raw), ["1", "2", "-3"])
         self.assertEqual(parser.ints(raw), [1, 2, -3])
 
-    def test_ints_per_line_default_and_delimiter(self):
-        raw = "1 2 3\n4 5 6"
-        self.assertEqual(parser.ints_per_line(raw), [[1, 2, 3], [4, 5, 6]])
-
-        raw_csv = "1,2,3\n4,5,6"
-        self.assertEqual(parser.ints_per_line(raw_csv, ","), [[1, 2, 3], [4, 5, 6]])
-
     def test_key_ints(self):
         raw = "190: 10 19\n83: 17 5"
         self.assertEqual(parser.key_ints(raw), {190: [10, 19], 83: [17, 5]})
@@ -129,12 +122,60 @@ class TestCommonParser(unittest.TestCase):
         result = parser.mapped(raw, lambda line: tuple(map(int, line.split(","))))
         self.assertEqual(result, [(1, 2), (3, 4)])
 
+    def test_coordinates(self):
+        raw = "10,20\n30,40\n50,60"
+        self.assertEqual(parser.coordinates(raw), [(10, 20), (30, 40), (50, 60)])
+
+    def test_coordinates_3d(self):
+        raw = "1,2,3\n4,5,6\n7,8,9"
+        self.assertEqual(parser.coordinates(raw), [(1, 2, 3), (4, 5, 6), (7, 8, 9)])
+
+    def test_coordinates_with_delimiter(self):
+        raw = "10 20\n30 40"
+        self.assertEqual(parser.coordinates(raw, delimiter=" "), [(10, 20), (30, 40)])
+
+    def test_coordinates_with_float(self):
+        raw = "1.5,2.5\n3.5,4.5"
+        self.assertEqual(
+            parser.coordinates(raw, value_type=float), [(1.5, 2.5), (3.5, 4.5)]
+        )
+
+    def test_coordinates_inline_space_separated(self):
+        """Test inline coordinates separated by spaces: '1,2 3,4 5,6'"""
+        raw = "1,2 3,4 5,6"
+        self.assertEqual(
+            parser.coordinates(raw, coord_delimiter=" "), [(1, 2), (3, 4), (5, 6)]
+        )
+
+    def test_coordinates_inline_dash_notation(self):
+        """Test inline coordinates with dash notation: '1-2 3-4 5-6'"""
+        raw = "1-2 3-4 5-6"
+        self.assertEqual(
+            parser.coordinates(raw, delimiter="-", coord_delimiter=" "),
+            [(1, 2), (3, 4), (5, 6)],
+        )
+
+    def test_coordinates_inline_comma_separated(self):
+        """Test inline coordinates separated by commas: '1-2,3-4,5-6'"""
+        raw = "1-2,3-4,5-6"
+        self.assertEqual(
+            parser.coordinates(raw, delimiter="-", coord_delimiter=","),
+            [(1, 2), (3, 4), (5, 6)],
+        )
+
+    def test_coordinates_named_with_mapped(self):
+        """Test parsing named coordinates like 'x=1, y=2, z=3' using mapped."""
+        import re
+
+        raw = "x=10, y=20, z=30\nx=40, y=50, z=60"
+        result = parser.mapped(
+            raw,
+            lambda line: tuple(int(x) for x in re.findall(r"-?\d+", line)),
+        )
+        self.assertEqual(result, [(10, 20, 30), (40, 50, 60)])
+
 
 class TestCommonUtils(unittest.TestCase):
-    def test_transpose(self):
-        pairs = [(1, 2), (3, 4), (5, 6)]
-        self.assertEqual(common_utils.transpose(pairs), ((1, 3, 5), (2, 4, 6)))
-
     def test_frequencies_and_all_equal(self):
         data = ["a", "b", "a", "c", "a", "b"]
         self.assertEqual(common_utils.frequencies(data), {"a": 3, "b": 2, "c": 1})
@@ -171,6 +212,68 @@ class TestCommonUtils(unittest.TestCase):
         self.assertEqual(common_utils.lcm(3, 4, 5), 60)
         self.assertEqual(common_utils.from_digits([9, 8, 7]), 987)
 
+    def test_euclidean_distance_2d(self):
+        """Test 2D Euclidean distance."""
+        # Basic 3-4-5 triangle
+        self.assertEqual(common_utils.euclidean_distance((0, 0), (3, 4)), 5.0)
+        # Same point
+        self.assertEqual(common_utils.euclidean_distance((5, 5), (5, 5)), 0.0)
+        # With floats
+        self.assertEqual(common_utils.euclidean_distance((1.5, 2.5), (4.5, 6.5)), 5.0)
+
+    def test_euclidean_distance_3d(self):
+        """Test 3D Euclidean distance (junction boxes)."""
+        # Test with junction box coordinates
+        # d = sqrt((57-162)^2 + (618-817)^2 + (57-812)^2)
+        # d = sqrt(11025 + 39601 + 570025) = sqrt(620651) = 787.814064
+        dist = common_utils.euclidean_distance((162, 817, 812), (57, 618, 57))
+        self.assertAlmostEqual(dist, 787.814064, places=5)
+
+        # Another junction box pair
+        dist2 = common_utils.euclidean_distance((162, 817, 812), (906, 360, 560))
+        self.assertAlmostEqual(dist2, 908.784353, places=5)
+
+    def test_euclidean_distance_different_dimensions(self):
+        """Test that different dimensions raise ValueError."""
+        with self.assertRaises(ValueError) as context:
+            common_utils.euclidean_distance((1, 2), (1, 2, 3))
+        self.assertIn("same dimensions", str(context.exception))
+
+    def test_squared_euclidean_distance_2d(self):
+        """Test 2D squared Euclidean distance."""
+        # Basic 3-4-5 triangle (squared)
+        self.assertEqual(common_utils.squared_euclidean_distance((0, 0), (3, 4)), 25.0)
+        # Same point
+        self.assertEqual(common_utils.squared_euclidean_distance((5, 5), (5, 5)), 0.0)
+
+    def test_squared_euclidean_distance_3d(self):
+        """Test 3D squared Euclidean distance."""
+        # Junction box coordinates
+        # (57-162)^2 + (618-817)^2 + (57-812)^2 = 11025 + 39601 + 570025 = 620651
+        sq_dist = common_utils.squared_euclidean_distance(
+            (162, 817, 812), (57, 618, 57)
+        )
+        self.assertEqual(sq_dist, 620651.0)
+
+    def test_squared_euclidean_distance_comparison(self):
+        """Test using squared distance for comparison (optimization)."""
+        box1 = (162, 817, 812)
+        box2 = (57, 618, 57)
+        box3 = (906, 360, 560)
+
+        # Find which box is closer to box1
+        dist_to_box2 = common_utils.squared_euclidean_distance(box1, box2)
+        dist_to_box3 = common_utils.squared_euclidean_distance(box1, box3)
+
+        # box2 should be closer
+        self.assertLess(dist_to_box2, dist_to_box3)
+
+    def test_squared_euclidean_distance_different_dimensions(self):
+        """Test that different dimensions raise ValueError for squared distance."""
+        with self.assertRaises(ValueError) as context:
+            common_utils.squared_euclidean_distance((1, 2), (1, 2, 3))
+        self.assertIn("same dimensions", str(context.exception))
+
     def test_range_helpers(self):
         self.assertTrue(common_utils.ranges_overlap((1, 5), (5, 10)))
         self.assertFalse(common_utils.ranges_overlap((1, 3), (4, 6)))
@@ -191,10 +294,33 @@ class TestCommonUtils(unittest.TestCase):
             common_utils.within_range(5, [(1, 5), (10, 15)], inclusive=False)
         )
 
-        self.assertEqual(common_utils.range_coverage([(1, 3), (5, 7), (2, 6)]), 7)
+        # Test with new RangeMode API
+        from fraocme.common import RangeMode
+
         self.assertEqual(
-            common_utils.range_coverage([(1, 3), (5, 7), (2, 6)], inclusive=False), 5
+            common_utils.range_coverage(
+                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.INCLUSIVE
+            ),
+            7,
         )
+        self.assertEqual(
+            common_utils.range_coverage(
+                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.HALF_OPEN
+            ),
+            6,
+        )
+        self.assertEqual(
+            common_utils.range_coverage(
+                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.EXCLUSIVE
+            ),
+            5,
+        )
+
+    def test_merge_ranges_empty(self):
+        self.assertEqual(common_utils.merge_ranges([], inclusive=True), [])
+
+    def test_within_range_exclusive_hit(self):
+        self.assertTrue(common_utils.within_range(5, [(4, 6)], inclusive=False))
 
 
 class TestCommonPrinterExtras(unittest.TestCase):

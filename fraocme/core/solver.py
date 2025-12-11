@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import TypeVar
 
 from fraocme.ui import c
-from fraocme.ui.printer import print_header
+from fraocme.ui.printer import (
+    print_day_header,
+    print_part_error,
+    print_part_result,
+)
 
 T = TypeVar("T")
 
@@ -22,11 +26,18 @@ class Solver(ABC):
     """
 
     def __init__(
-        self, day: int | None = None, debug: bool = False, copy_input: bool = True
+        self,
+        day: int | None = None,
+        copy_input: bool = True,
+        debug: bool = False,
+        show_traceback: bool = True,
+        use_example: bool = False,
     ):
         self.day = day
-        self.debug_enabled = debug
         self.copy_input = copy_input
+        self.debug_enabled = debug
+        self.show_traceback = show_traceback
+        self.use_example = use_example
         self._input_dir: Path | None = None
 
     # ─────────────────────────────────────────────────────────
@@ -62,7 +73,8 @@ class Solver(ABC):
         if self._input_dir is None:
             raise ValueError("Input directory not set")
 
-        path = self._input_dir / "input.txt"
+        filename = "example_input.txt" if self.use_example else "input.txt"
+        path = self._input_dir / filename
         if not path.exists():
             raise FileNotFoundError(f"Input not found: {path}")
 
@@ -77,7 +89,7 @@ class Solver(ABC):
 
     def run(self, parts: list[int] = [1, 2]) -> None:
         """Run and print results."""
-        print_header("Day " + c.bold(c.green(self.day)))
+        print_day_header(self.day)
         results: dict[int, tuple[int | None, float]] = {}
 
         for part in parts:
@@ -88,8 +100,6 @@ class Solver(ABC):
         return results
 
     def _run_part(self, part: int) -> tuple[int | None, float]:
-        part_name = "one" if part == 1 else "two"
-
         try:
             data = self.load()
             func = self.part1 if part == 1 else self.part2
@@ -98,16 +108,13 @@ class Solver(ABC):
             answer = func(data)
             elapsed_ms = (time.perf_counter() - start) * 1000
 
-            formatted_answer = c.success(str(answer))
-            formatted_time = c.time(elapsed_ms)
-            print(f"  Part {c.cyan(part_name)}: {formatted_answer} {formatted_time}")
+            print_part_result(part, answer, elapsed_ms)
 
             return answer, elapsed_ms
 
         except Exception as e:
-            print(f"  Part {c.cyan(part_name)}: {c.error(f'ERROR - {e}')}")
-            if self.debug_enabled:
-                # TODO: add a traceback flag rather than using debug?
+            print_part_error(part, e)
+            if self.show_traceback:
                 tb = traceback.format_exc()
                 print(c.muted(tb))
             return None, 0.0
@@ -117,7 +124,13 @@ class Solver(ABC):
     # ─────────────────────────────────────────────────────────
 
     def debug(self, *args, **kwargs) -> None:
-        """Print only if debug mode is enabled."""
+        """Print only if debug mode is enabled.
+        To not print function call results directly,
+            pass a callable as argument (lambda).
+
+        Example:
+            self.debug("Value is", lambda: compute_expensive_value())
+        """
         if not self.debug_enabled:
             return
 

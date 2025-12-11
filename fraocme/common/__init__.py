@@ -1,4 +1,4 @@
-from .parser import ints, ints_per_line, key_ints, lines, mapped, ranges, sections
+from .parser import coordinates, ints, key_ints, lines, mapped, ranges, sections
 from .printer import (
     print_dict_head,
     print_dict_row,
@@ -6,6 +6,7 @@ from .printer import (
     print_ranges,
     print_row_stats,
 )
+from .types import RangeMode
 from .utils import (
     all_equal,
     chunks,
@@ -22,21 +23,19 @@ from .utils import (
     ranges_overlap,
     rotate,
     sign,
-    transpose,
     unique,
     windows,
     wrap,
 )
 
 __all__ = [
+    "coordinates",
     "sections",
     "lines",
     "ints",
-    "ints_per_line",
     "key_ints",
     "ranges",
     "mapped",
-    "transpose",
     "frequencies",
     "all_equal",
     "chunks",
@@ -60,4 +59,5 @@ __all__ = [
     "print_dict_row",
     "print_dict_head",
     "print_max_in_rows",
+    "RangeMode",
 ]

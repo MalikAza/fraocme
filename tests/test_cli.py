@@ -47,6 +47,14 @@ class TestMainArgumentParsing(unittest.TestCase):
                 args = mock_run.call_args[0][0]
                 self.assertEqual(args.part, 1)
 
+    def test_run_command_with_example_flag(self):
+        """Test run command with --example flag."""
+        with patch("sys.argv", ["fraocme", "run", "1", "--example"]):
+            with patch("fraocme.cli.cmd_run") as mock_run:
+                main()
+                args = mock_run.call_args[0][0]
+                self.assertTrue(args.example)
+
     def test_run_command_with_no_stats_flag(self):
         """Test run command with --no-stats flag."""
         with patch("sys.argv", ["fraocme", "run", "1", "--no-stats"]):
@@ -54,6 +62,14 @@ class TestMainArgumentParsing(unittest.TestCase):
                 main()
                 args = mock_run.call_args[0][0]
                 self.assertTrue(args.no_stats)
+
+    def test_run_command_with_no_traceback_flag(self):
+        """Test run command with --no-traceback flag."""
+        with patch("sys.argv", ["fraocme", "run", "1", "--no-traceback"]):
+            with patch("fraocme.cli.cmd_run") as mock_run:
+                main()
+                args = mock_run.call_args[0][0]
+                self.assertTrue(args.no_traceback)
 
     def test_stats_command(self):
         """Test stats command."""
@@ -97,10 +113,14 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = False
+        args.no_traceback = False
+        args.example = False
 
         cmd_run(args)
 
-        mock_runner.run_all.assert_called_once_with(parts=[1, 2], debug=False)
+        mock_runner.run_all.assert_called_once_with(
+            parts=[1, 2], debug=False, show_traceback=True, use_example=False
+        )
         mock_stats.save.assert_called_once()
 
     @patch("fraocme.cli.Runner")
@@ -120,11 +140,15 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = False
+        args.no_traceback = False
+        args.example = False
 
         cmd_run(args)
 
         mock_runner.day_exists.assert_called_once_with(5)
-        mock_runner.run_day.assert_called_once_with(5, parts=[1, 2], debug=False)
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1, 2], debug=False, show_traceback=True, use_example=False
+        )
 
     @patch("fraocme.cli.Runner")
     @patch("fraocme.cli.Stats")
@@ -143,10 +167,14 @@ class TestCmdRun(unittest.TestCase):
         args.part = 1
         args.debug = False
         args.no_stats = False
+        args.no_traceback = False
+        args.example = False
 
         cmd_run(args)
 
-        mock_runner.run_day.assert_called_once_with(5, parts=[1], debug=False)
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1], debug=False, show_traceback=True, use_example=False
+        )
 
     @patch("fraocme.cli.Runner")
     @patch("fraocme.cli.Stats")
@@ -165,6 +193,8 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = True
+        args.no_traceback = False
+        args.example = False
 
         cmd_run(args)
 
@@ -186,6 +216,8 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = False
+        args.no_traceback = False
+        args.example = False
 
         with patch("sys.stdout", new=StringIO()):
             with self.assertRaises(SystemExit):
@@ -206,60 +238,164 @@ class TestCmdRun(unittest.TestCase):
         args.part = None
         args.debug = False
         args.no_stats = False
+        args.example = False
 
         with patch("sys.stdout", new=StringIO()):
             with self.assertRaises(SystemExit):
                 cmd_run(args)
 
+    @patch("fraocme.cli.Runner")
+    @patch("fraocme.cli.Stats")
+    def test_cmd_run_with_no_traceback(self, mock_stats_class, mock_runner_class):
+        """Test running with --no-traceback flag disables traceback."""
+        mock_runner = MagicMock()
+        mock_stats = MagicMock()
+        mock_runner_class.return_value = mock_runner
+        mock_stats_class.return_value = mock_stats
+        mock_runner.day_exists.return_value = True
+        mock_runner.run_day.return_value = {}
+
+        args = MagicMock()
+        args.all = False
+        args.day = 5
+        args.part = None
+        args.debug = False
+        args.no_stats = False
+        args.no_traceback = True
+        args.example = False
+
+        cmd_run(args)
+
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1, 2], debug=False, show_traceback=False, use_example=False
+        )
+
+    @patch("fraocme.cli.Runner")
+    @patch("fraocme.cli.Stats")
+    def test_cmd_run_with_example_flag(self, mock_stats_class, mock_runner_class):
+        """Test running with --example flag uses example input."""
+        mock_runner = MagicMock()
+        mock_stats = MagicMock()
+        mock_runner_class.return_value = mock_runner
+        mock_stats_class.return_value = mock_stats
+        mock_runner.day_exists.return_value = True
+        mock_runner.run_day.return_value = {}
+
+        args = MagicMock()
+        args.all = False
+        args.day = 5
+        args.part = None
+        args.debug = False
+        args.no_stats = False
+        args.no_traceback = False
+        args.example = True
+
+        cmd_run(args)
+
+        mock_runner.run_day.assert_called_once_with(
+            5, parts=[1, 2], debug=False, show_traceback=True, use_example=True
+        )
+
+    @patch("fraocme.cli.Runner")
+    @patch("fraocme.cli.Stats")
+    def test_cmd_run_all_with_example_flag(self, mock_stats_class, mock_runner_class):
+        """Test running all days with --example flag."""
+        mock_runner = MagicMock()
+        mock_stats = MagicMock()
+        mock_runner_class.return_value = mock_runner
+        mock_stats_class.return_value = mock_stats
+        mock_runner.run_all.return_value = {1: {}, 2: {}}
+
+        args = MagicMock()
+        args.all = True
+        args.part = None
+        args.debug = False
+        args.no_stats = False
+        args.no_traceback = False
+        args.example = True
+
+        cmd_run(args)
+
+        mock_runner.run_all.assert_called_once_with(
+            parts=[1, 2], debug=False, show_traceback=True, use_example=True
+        )
+        mock_stats.save.assert_not_called()
+
 
 class TestCmdStats(unittest.TestCase):
     """Test cmd_stats function."""
 
+    @patch("fraocme.profiling.printer.print_stats_day")
+    @patch("fraocme.profiling.printer.print_stats_summary_table")
     @patch("fraocme.cli.print_header")
     @patch("fraocme.cli.Stats")
-    def test_cmd_stats_all(self, mock_stats_class, mock_print_header):
+    def test_cmd_stats_all(
+        self, mock_stats_class, mock_print_header, mock_summary_table, mock_stats_day
+    ):
         """Test stats command for all days."""
         mock_stats = MagicMock()
         mock_stats_class.return_value = mock_stats
+        # Simulate two days of data
+        mock_stats.get_all.return_value = {
+            "day_01": {"part1": {}},
+            "day_02": {"part1": {}},
+        }
 
         args = MagicMock()
         args.day = None
         args.best = False
+        args.reset = False
+        args.all = False
 
         cmd_stats(args)
 
         mock_print_header.assert_called_once()
-        mock_stats.print_all.assert_called_once_with(best_only=False)
+        self.assertEqual(mock_stats_day.call_count, 2)
+        mock_summary_table.assert_not_called()
 
+    @patch("fraocme.profiling.printer.print_stats_day")
     @patch("fraocme.cli.print_header")
     @patch("fraocme.cli.Stats")
-    def test_cmd_stats_specific_day(self, mock_stats_class, mock_print_header):
+    def test_cmd_stats_specific_day(
+        self, mock_stats_class, mock_print_header, mock_stats_day
+    ):
         """Test stats command for specific day."""
         mock_stats = MagicMock()
         mock_stats_class.return_value = mock_stats
+        mock_stats.get_day.return_value = {"part1": {}}
 
         args = MagicMock()
         args.day = 5
         args.best = False
+        args.reset = False
+        args.all = False
 
         cmd_stats(args)
 
-        mock_stats.print_day.assert_called_once_with(5, best_only=False)
+        mock_stats_day.assert_called_once_with(
+            5, mock_stats.get_day.return_value, best_only=False
+        )
 
+    @patch("fraocme.profiling.printer.print_stats_summary_table")
     @patch("fraocme.cli.print_header")
     @patch("fraocme.cli.Stats")
-    def test_cmd_stats_best_only(self, mock_stats_class, mock_print_header):
+    def test_cmd_stats_best_only(
+        self, mock_stats_class, mock_print_header, mock_summary_table
+    ):
         """Test stats command with best_only flag."""
         mock_stats = MagicMock()
         mock_stats_class.return_value = mock_stats
+        mock_stats.get_all.return_value = {"day_01": {"part1": {}}}
 
         args = MagicMock()
         args.day = None
         args.best = True
+        args.reset = False
+        args.all = False
 
         cmd_stats(args)
 
-        mock_stats.print_all.assert_called_once_with(best_only=True)
+        mock_summary_table.assert_called_once_with(mock_stats.get_all.return_value)
 
 
 class TestCreateCommand(unittest.TestCase):
@@ -280,6 +416,20 @@ class TestCreateCommand(unittest.TestCase):
             import shutil
 
             shutil.rmtree(self.test_day_dir)
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up the entire days directory after all tests complete."""
+        import shutil
+
+        days_dir = Path.cwd() / "days"
+        if days_dir.exists():
+            try:
+                # Check if directory is empty (only contains this test's artifacts)
+                if not any(days_dir.iterdir()):
+                    shutil.rmtree(days_dir)
+            except OSError:
+                pass  # Directory might have files being used
 
     def test_create_command_creates_directory(self):
         """Test that create command creates the day directory."""
@@ -302,6 +452,18 @@ class TestCreateCommand(unittest.TestCase):
         input_file = self.test_day_dir / "input.txt"
         self.assertTrue(input_file.exists())
         self.assertEqual(input_file.read_text(), "")
+
+    def test_create_command_creates_example_input_file(self):
+        """Test that create command creates example_input.txt file."""
+        args = MagicMock()
+        args.day = 12
+
+        with patch("sys.stdout", new=StringIO()):
+            cmd_create(args)
+
+        example_input_file = self.test_day_dir / "example_input.txt"
+        self.assertTrue(example_input_file.exists())
+        self.assertEqual(example_input_file.read_text(), "")
 
     def test_create_command_creates_solution_file(self):
         """Test that create command creates solution.py file."""
@@ -326,7 +488,7 @@ class TestCreateCommand(unittest.TestCase):
         content = solution_file.read_text()
 
         self.assertIn("class Day12(Solver):", content)
-        init_sig = "def __init__(self, day: int = 12, debug: bool = False):"
+        init_sig = "def __init__(self, day: int = 12, **kwargs):"
         self.assertIn(init_sig, content)
 
     def test_create_command_solution_has_parse_method(self):
@@ -413,6 +575,7 @@ class TestCreateCommand(unittest.TestCase):
 
         output_text = output.getvalue()
         self.assertIn("input.txt", output_text)
+        self.assertIn("example_input.txt", output_text)
         self.assertIn("solution.py", output_text)
 
     def test_create_command_different_day_numbers(self):
@@ -449,61 +612,89 @@ class TestCreateCommand(unittest.TestCase):
 
     def test_create_command_validates_day_range_lower_bound(self):
         """Test that create command rejects day 0."""
-        args = MagicMock()
-        args.day = 0
+        test_day_dir = Path.cwd() / "days" / "day_00"
+        try:
+            args = MagicMock()
+            args.day = 0
 
-        output = StringIO()
-        with patch("sys.stdout", output):
-            with patch("sys.exit") as mock_exit:
-                cmd_create(args)
-                mock_exit.assert_called_once_with(1)
+            output = StringIO()
+            with patch("sys.stdout", output):
+                with patch("sys.exit") as mock_exit:
+                    cmd_create(args)
+                    mock_exit.assert_called_once_with(1)
 
-        output_text = output.getvalue()
-        self.assertIn("Error:", output_text)
-        self.assertIn("must be between 1 and 25", output_text)
+            output_text = output.getvalue()
+            self.assertIn("Error:", output_text)
+            self.assertIn("must be between 1 and 25", output_text)
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
     def test_create_command_validates_day_range_upper_bound(self):
         """Test that create command rejects day 26."""
-        args = MagicMock()
-        args.day = 26
+        test_day_dir = Path.cwd() / "days" / "day_26"
+        try:
+            args = MagicMock()
+            args.day = 26
 
-        output = StringIO()
-        with patch("sys.stdout", output):
-            with patch("sys.exit") as mock_exit:
-                cmd_create(args)
-                mock_exit.assert_called_once_with(1)
+            output = StringIO()
+            with patch("sys.stdout", output):
+                with patch("sys.exit") as mock_exit:
+                    cmd_create(args)
+                    mock_exit.assert_called_once_with(1)
 
-        output_text = output.getvalue()
-        self.assertIn("Error:", output_text)
-        self.assertIn("must be between 1 and 25", output_text)
+            output_text = output.getvalue()
+            self.assertIn("Error:", output_text)
+            self.assertIn("must be between 1 and 25", output_text)
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
     def test_create_command_validates_negative_day(self):
         """Test that create command rejects negative day numbers."""
-        args = MagicMock()
-        args.day = -5
+        test_day_dir = Path.cwd() / "days" / "day_-5"
+        try:
+            args = MagicMock()
+            args.day = -5
 
-        output = StringIO()
-        with patch("sys.stdout", output):
-            with patch("sys.exit") as mock_exit:
-                cmd_create(args)
-                mock_exit.assert_called_once_with(1)
+            output = StringIO()
+            with patch("sys.stdout", output):
+                with patch("sys.exit") as mock_exit:
+                    cmd_create(args)
+                    mock_exit.assert_called_once_with(1)
 
-        output_text = output.getvalue()
-        self.assertIn("Error:", output_text)
+            output_text = output.getvalue()
+            self.assertIn("Error:", output_text)
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
     def test_create_command_validates_large_day(self):
         """Test that create command rejects very large day numbers."""
-        args = MagicMock()
-        args.day = 100
+        test_day_dir = Path.cwd() / "days" / "day_100"
+        try:
+            args = MagicMock()
+            args.day = 100
 
-        output = StringIO()
-        with patch("sys.stdout", output):
-            with patch("sys.exit") as mock_exit:
-                cmd_create(args)
-                mock_exit.assert_called_once_with(1)
+            output = StringIO()
+            with patch("sys.stdout", output):
+                with patch("sys.exit") as mock_exit:
+                    cmd_create(args)
+                    mock_exit.assert_called_once_with(1)
 
-        output_text = output.getvalue()
-        self.assertIn("Error:", output_text)
+            output_text = output.getvalue()
+            self.assertIn("Error:", output_text)
+        finally:
+            if test_day_dir.exists():
+                import shutil
+
+                shutil.rmtree(test_day_dir)
 
     def test_create_command_accepts_valid_range(self):
         """Test that create command accepts all valid day numbers."""
@@ -560,6 +751,83 @@ class TestCreateCommand(unittest.TestCase):
             if test_day_dir.exists():
                 import shutil
 
+                shutil.rmtree(test_day_dir)
+
+    def test_create_command_solution_accepts_kwargs(self):
+        """Test that generated solution accepts **kwargs for Solver parameters."""
+        import shutil
+
+        args = MagicMock()
+        args.day = 15
+        test_day_dir = Path.cwd() / "days" / "day_15"
+
+        try:
+            with patch("sys.stdout", new=StringIO()):
+                cmd_create(args)
+
+            solution_file = test_day_dir / "solution.py"
+            content = solution_file.read_text()
+
+            # Verify it uses **kwargs instead of explicit parameters
+            self.assertIn("def __init__(self, day: int = 15, **kwargs):", content)
+            self.assertIn("super().__init__(day=day, **kwargs)", content)
+            # Ensure old hardcoded parameters are not present
+            self.assertNotIn("debug=debug", content)
+            self.assertNotIn("copy_input=True", content)
+        finally:
+            if test_day_dir.exists():
+                shutil.rmtree(test_day_dir)
+
+    def test_create_command_solution_is_instantiable_with_kwargs(self):
+        """Test that generated solution can be instantiated with various kwargs."""
+        import importlib.util
+        import shutil
+
+        args = MagicMock()
+        args.day = 17
+        test_day_dir = Path.cwd() / "days" / "day_17"
+
+        try:
+            with patch("sys.stdout", new=StringIO()):
+                cmd_create(args)
+
+            solution_file = test_day_dir / "solution.py"
+            self.assertTrue(solution_file.exists())
+
+            # Import the generated module
+            spec = importlib.util.spec_from_file_location(
+                "day_17_solution", solution_file
+            )
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            # Instantiate with no extra kwargs
+            solver1 = module.Day17()
+            self.assertEqual(solver1.day, 17)
+
+            # Instantiate with debug kwarg
+            solver2 = module.Day17(debug=True)
+            self.assertEqual(solver2.debug_enabled, True)
+
+            # Instantiate with show_traceback kwarg
+            solver3 = module.Day17(show_traceback=False)
+            self.assertEqual(solver3.show_traceback, False)
+
+            # Instantiate with all kwargs that Solver accepts
+            solver4 = module.Day17(
+                day=17,
+                debug=True,
+                show_traceback=False,
+                copy_input=False,
+                use_example=True,
+            )
+            self.assertEqual(solver4.day, 17)
+            self.assertEqual(solver4.debug_enabled, True)
+            self.assertEqual(solver4.show_traceback, False)
+            self.assertEqual(solver4.copy_input, False)
+            self.assertEqual(solver4.use_example, True)
+        finally:
+            if test_day_dir.exists():
                 shutil.rmtree(test_day_dir)
 
 

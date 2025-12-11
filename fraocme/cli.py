@@ -35,6 +35,14 @@ def main():
     run_parser.add_argument(
         "-d", "--debug", action="store_true", help="Enable debug output"
     )
+    run_parser.add_argument(
+        "--example",
+        action="store_true",
+        help="Run with example input instead of main input",
+    )
+    run_parser.add_argument(
+        "--no-traceback", action="store_true", help="Don't show traceback on errors"
+    )
     run_parser.add_argument("--no-stats", action="store_true", help="Don't save stats")
 
     # ─────────────────────────────────────────────────────────
@@ -47,6 +55,12 @@ def main():
     )
     stats_parser.add_argument(
         "--best", action="store_true", help="Show only best times"
+    )
+    stats_parser.add_argument(
+        "--reset", action="store_true", help="Reset stats for a day or all days"
+    )
+    stats_parser.add_argument(
+        "--all", action="store_true", help="Apply reset to all days"
     )
 
     # ─────────────────────────────────────────────────────────
@@ -90,8 +104,14 @@ def cmd_run(args):
 
     # Run all days
     if args.all:
-        results = runner.run_all(parts=parts, debug=args.debug)
-        if not args.no_stats:
+        results = runner.run_all(
+            parts=parts,
+            debug=args.debug,
+            show_traceback=not args.no_traceback,
+            use_example=args.example,
+        )
+
+        if not args.no_stats and not args.example:
             for day, day_results in results.items():
                 stats.update(day, day_results)
             stats.save()
@@ -110,9 +130,16 @@ def cmd_run(args):
         )
         sys.exit(1)
 
-    results = runner.run_day(args.day, parts=parts, debug=args.debug)
+    results = runner.run_day(
+        args.day,
+        parts=parts,
+        debug=args.debug,
+        show_traceback=not args.no_traceback,
+        use_example=args.example,
+    )
 
-    if not args.no_stats:
+    # Prevent stats update if --example is used
+    if not args.no_stats and not args.example:
         stats.update(args.day, results)
         stats.save()
 
@@ -121,10 +148,30 @@ def cmd_stats(args):
     """Handle stats command."""
     print_header("Profiling Statistics")
     stats = Stats()
+    from fraocme.profiling.printer import print_stats_day, print_stats_summary_table
+
+    if args.reset:
+        if args.all:
+            stats.reset_all()
+            print(c.success("✓ All stats reset."))
+        elif args.day is not None:
+            stats.reset_day(args.day)
+            print(c.success(f"✓ Stats for day {args.day} reset."))
+        else:
+            print(c.error("Specify a day to reset or use --all."))
+        return
     if args.day is not None:
-        stats.print_day(args.day, best_only=args.best)
+        data = stats.get_day(args.day)
+        print_stats_day(args.day, data, best_only=args.best)
     else:
-        stats.print_all(best_only=args.best)
+        data = stats.get_all()
+        if args.best:
+            print_stats_summary_table(data)
+        else:
+            days = sorted(data.keys(), key=lambda x: int(x.split("_")[1]))
+            for day_key in days:
+                day_num = int(day_key.split("_")[1])
+                print_stats_day(day_num, data[day_key], best_only=False)
 
 
 def cmd_create(args):
@@ -155,14 +202,18 @@ def cmd_create(args):
     input_file = day_dir / "input.txt"
     input_file.write_text("")
 
+    # Create example_input.txt
+    example_input_file = day_dir / "example_input.txt"
+    example_input_file.write_text("")
+
     # Create solution.py template
     day_class_name = f"Day{day_num}"
     solution_template = f'''from fraocme import Solver
 
 
 class {day_class_name}(Solver):
-    def __init__(self, day: int = {day_num}, debug: bool = False):
-        super().__init__(day=day, debug=debug, copy_input=True)
+    def __init__(self, day: int = {day_num}, **kwargs):
+        super().__init__(day=day, **kwargs)
 
     def parse(self, raw: str):
         """Parse the input data."""
@@ -186,7 +237,12 @@ class {day_class_name}(Solver):
         + c.success(" at ")
         + c.bold(str(day_dir))
     )
-    print(f"  {c.muted('Created:')} {input_file.name}, {solution_file.name}")
+    print(
+        c.muted("Created:")
+        + f" {input_file.name}"
+        + f", {example_input_file.name}"
+        + f", {solution_file.name}"
+    )
 
 
 if __name__ == "__main__":

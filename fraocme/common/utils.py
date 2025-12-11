@@ -2,29 +2,9 @@ import math
 from collections import Counter
 from typing import Sequence, TypeVar
 
+from .types import RangeMode
+
 T = TypeVar("T")
-
-
-# ─────────────────────────────────────────────────────────
-# Transpose
-# ─────────────────────────────────────────────────────────
-def transpose(data: Sequence[Sequence[int]]) -> tuple[tuple[int, ...], ...]:
-    """
-    Transpose rows into columns.
-
-    Args:
-        data: List of rows (e.g., from ints_per_line)
-
-    Example:
-        data = [[63721, 98916], [83871, 23584], [55026, 62690]]
-        transpose(data)
-        # Returns: ((63721, 83871, 55026), (98916, 23584, 62690))
-
-    Usage with parser:
-        pairs = ints_per_line(raw)
-        left, right = transpose(pairs)
-    """
-    return tuple(zip(*data))
 
 
 # ─────────────────────────────────────────────────────────
@@ -37,7 +17,7 @@ def frequencies(data: Sequence[T]) -> dict[T, int]:
     Example:
         data = ["a", "b", "a", "c", "a", "b"]
         frequencies(data)
-        # Returns: {"a": 3, "b": 2, "c": 1}
+        Returns: {"a": 3, "b": 2, "c": 1}
     """
     return dict(Counter(data))
 
@@ -48,15 +28,15 @@ def all_equal(data: Sequence[T]) -> bool:
 
     Example:
         all_equal([1, 1, 1, 1])
-        # Returns: True
+        Returns: True
 
     Example (different elements):
         all_equal([1, 2, 1, 1])
-        # Returns: False
+        Returns: False
 
     Example (empty or single):
-        all_equal([])      # Returns: True
-        all_equal([42])    # Returns: True
+        all_equal([])      Returns: True
+        all_equal([42])    Returns: True
     """
     return len(set(data)) <= 1
 
@@ -75,14 +55,14 @@ def chunks(data: Sequence[T], size: int) -> list[Sequence[T]]:
     Example:
         data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         chunks(data, 3)
-        # Returns: [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        Returns: [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
     Example (input grouped by 3 lines):
         lines = ["name: Alice", "age: 30", "city: Paris",
                  "name: Bob", "age: 25", "city: London"]
         chunks(lines, 3)
-        # Returns: [["name: Alice", "age: 30", "city: Paris"],
-        #           ["name: Bob", "age: 25", "city: London"]]
+        Returns: [["name: Alice", "age: 30", "city: Paris"],
+                  ["name: Bob", "age: 25", "city: London"]]
     """
     return [data[i : i + size] for i in range(0, len(data), size)]
 
@@ -98,12 +78,12 @@ def windows(data: Sequence[T], size: int) -> list[Sequence[T]]:
     Example:
         data = [1, 2, 3, 4, 5]
         windows(data, 3)
-        # Returns: [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
+        Returns: [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
 
     Example (sum of 3 consecutive):
         data = [199, 200, 208, 210, 200]
         sums = [sum(w) for w in windows(data, 3)]
-        # Returns: [607, 618, 618]
+        Returns: [607, 618, 618]
     """
     return [data[i : i + size] for i in range(len(data) - size + 1)]
 
@@ -115,12 +95,12 @@ def pairwise(data: Sequence[T]) -> list[tuple[T, T]]:
     Example:
         data = [1, 2, 3, 4]
         pairwise(data)
-        # Returns: [(1, 2), (2, 3), (3, 4)]
+        Returns: [(1, 2), (2, 3), (3, 4)]
 
     Example (count increases):
         data = [199, 200, 208, 200, 207]
         increases = sum(1 for a, b in pairwise(data) if b > a)
-        # Returns: 3
+        Returns: 3
     """
     return list(zip(data, data[1:]))
 
@@ -135,7 +115,7 @@ def rotate(data: Sequence[T], n: int) -> list[T]:
 
     Example (rotate left):
         rotate([1, 2, 3, 4, 5], -2)
-        # Returns: [3, 4, 5, 1, 2]
+        Returns: [3, 4, 5, 1, 2]
     """
     if not data:
         return []
@@ -149,7 +129,7 @@ def unique(data: Sequence[T]) -> list[T]:
 
     Example:
         unique([1, 2, 2, 3, 1, 4, 2])
-        # Returns: [1, 2, 3, 4]
+        Returns: [1, 2, 3, 4]
 
     Note: Unlike set(), this preserves the first occurrence order.
     """
@@ -168,12 +148,12 @@ def flatten(nested: Sequence[Sequence[T]]) -> list[T]:
 
     Example:
         flatten([[1, 2], [3, 4], [5]])
-        # Returns: [1, 2, 3, 4, 5]
+        Returns: [1, 2, 3, 4, 5]
 
     Example (flatten parsed sections):
         data = [["a", "b"], ["c"], ["d", "e", "f"]]
         flatten(data)
-        # Returns: ["a", "b", "c", "d", "e", "f"]
+        Returns: ["a", "b", "c", "d", "e", "f"]
 
     Note: Only flattens one level. For deeper nesting, apply multiple times.
     """
@@ -188,15 +168,15 @@ def sign(n: int) -> int:
     Return -1, 0, or 1 based on sign of n.
 
     Example:
-        sign(5)   # Returns: 1
-        sign(-3)  # Returns: -1
-        sign(0)   # Returns: 0
+        sign(5)   Returns: 1
+        sign(-3)  Returns: -1
+        sign(0)   Returns: 0
 
     Example (moving toward target):
         current = 10
         target = 3
         step = sign(target - current)
-        # Returns: -1 (need to decrease)
+        Returns: -1 (need to decrease)
     """
     return (n > 0) - (n < 0)
 
@@ -207,15 +187,14 @@ def digits(n: int) -> list[int]:
 
     Example:
         digits(1234)
-        # Returns: [1, 2, 3, 4]
+        Returns: [1, 2, 3, 4]
 
     Example (single digit):
         digits(7)
-        # Returns: [7]
-
+        Returns: [7]
     Example (use with from_digits for round-trip):
-        digits(987)        # Returns: [9, 8, 7]
-        from_digits([9, 8, 7])  # Returns: 987
+        digits(987)        Returns: [9, 8, 7]
+        from_digits([9, 8, 7])  Returns: 987
     """
     return [int(d) for d in str(abs(n))]
 
@@ -230,16 +209,15 @@ def wrap(value: int, size: int) -> int:
 
     Example:
         wrap(105, 100)
-        # Returns: 5
+        Returns: 5
 
     Example (negative wrap):
         wrap(-10, 100)
-        # Returns: 90
-
+        Returns: 90
     Example (circular position):
         position = 50
         position = wrap(position + 60, 100)
-        # Returns: 10  # Wrapped around
+        Returns: 10  # Wrapped around
     """
     return value % size
 
@@ -250,15 +228,14 @@ def divisors(n: int) -> list[int]:
 
     Example:
         divisors(12)
-        # Returns: [1, 2, 3, 4, 6, 12]
+        Returns: [1, 2, 3, 4, 6, 12]
 
     Example:
         divisors(28)
-        # Returns: [1, 2, 4, 7, 14, 28]
-
+        Returns: [1, 2, 4, 7, 14, 28]
     Example (prime number):
         divisors(17)
-        # Returns: [1, 17]
+        Returns: [1, 17]
     """
     result = []
     sqrt_n = int(math.sqrt(n))
@@ -276,16 +253,16 @@ def gcd(*args: int) -> int:
 
     Example:
         gcd(12, 8)
-        # Returns: 4
+        Returns: 4
 
     Example with multiple numbers:
         gcd(24, 36, 48)
-        # Returns: 12
+        Returns: 12
 
     Common use case (simplifying fractions):
         numerator, denominator = 15, 25
         divisor = gcd(numerator, denominator)
-        # Returns: 5 → simplified: 3/5
+        Returns: 5 → simplified: 3/5
     """
     result = args[0]
     for n in args[1:]:
@@ -299,16 +276,16 @@ def lcm(*args: int) -> int:
 
     Example:
         lcm(4, 6)
-        # Returns: 12
+        Returns: 12
 
     Example with multiple numbers:
         lcm(3, 4, 5)
-        # Returns: 60
+        Returns: 60
 
     Common use case (cycle detection):
         cycles = [5, 7, 11]  # Different periods
         lcm(*cycles)
-        # Returns: 385  # When all cycles align
+        Returns: 385  # When all cycles align
     """
     result = args[0]
     for n in args[1:]:
@@ -323,14 +300,100 @@ def from_digits(digits: Sequence[int]) -> int:
     Example:
         digits = [1, 2, 3, 4]
         from_digits(digits)
-        # Returns: 1234
+        Returns: 1234
 
     Example (reverse operation of splitting):
         digits = [9, 8, 7]
         from_digits(digits)
-        # Returns: 987
+        Returns: 987
     """
     return int("".join(map(str, digits)))
+
+
+def euclidean_distance(p1: Sequence[int | float], p2: Sequence[int | float]) -> float:
+    """
+    Calculate Euclidean distance between two points in n-dimensional space.
+
+    Args:
+        p1: First point as sequence of coordinates
+        p2: Second point as sequence of coordinates
+
+    Returns:
+        Euclidean distance as float
+
+    Raises:
+        ValueError: If points have different dimensions
+
+    Example (2D):
+        euclidean_distance((0, 0), (3, 4))
+        Returns: 5.0
+
+    Example (3D junction boxes):
+        euclidean_distance((162, 817, 812), (57, 618, 57))
+        Returns: 760.8...
+
+    Example (with floats):
+        euclidean_distance((1.5, 2.5), (4.5, 6.5))
+        Returns: 5.0
+
+    Example (finding distance between two positions):
+        box1 = (162, 817, 812)
+        box2 = (57, 618, 57)
+        dist = euclidean_distance(box1, box2)
+        Returns: 760.8222985692171
+    """
+    if len(p1) != len(p2):
+        raise ValueError(
+            f"Points must have same dimensions: got {len(p1)} and {len(p2)}"
+        )
+    return math.sqrt(sum((a - b) ** 2 for a, b in zip(p1, p2)))
+
+
+def squared_euclidean_distance(
+    p1: Sequence[int | float], p2: Sequence[int | float]
+) -> float:
+    """
+    Calculate squared Euclidean distance between two points.
+
+    This is faster than euclidean_distance() as it avoids the sqrt operation.
+    Useful when only comparing distances (since a < b ⟺ a² < b² for positive numbers).
+
+    Args:
+        p1: First point as sequence of coordinates
+        p2: Second point as sequence of coordinates
+
+    Returns:
+        Squared Euclidean distance as float
+
+    Raises:
+        ValueError: If points have different dimensions
+
+    Example (2D):
+        squared_euclidean_distance((0, 0), (3, 4))
+        Returns: 25.0
+
+    Example (comparing distances without sqrt):
+        box1 = (162, 817, 812)
+        box2 = (57, 618, 57)
+        box3 = (906, 360, 560)
+
+        # Find closer box without expensive sqrt
+        dist1 = squared_euclidean_distance(box1, box2)
+        dist2 = squared_euclidean_distance(box1, box3)
+        closer = box2 if dist1 < dist2 else box3
+
+    Example (nearest neighbor search):
+        target = (100, 100, 100)
+        boxes = [(162, 817, 812), (57, 618, 57), (906, 360, 560)]
+
+        # Find nearest box efficiently
+        nearest = min(boxes, key=lambda b: squared_euclidean_distance(target, b))
+    """
+    if len(p1) != len(p2):
+        raise ValueError(
+            f"Points must have same dimensions: got {len(p1)} and {len(p2)}"
+        )
+    return sum((a - b) ** 2 for a, b in zip(p1, p2))
 
 
 # ─────────────────────────────────────────────────────────
@@ -346,15 +409,15 @@ def ranges_overlap(r1: tuple[int, int], r2: tuple[int, int]) -> bool:
 
     Example (overlapping):
         ranges_overlap((1, 5), (3, 8))
-        # Returns: True  # They share 3, 4, 5
+        Returns: True  # They share 3, 4, 5
 
     Example (not overlapping):
         ranges_overlap((1, 5), (6, 10))
-        # Returns: False  # No shared values
+        Returns: False  # No shared values
 
     Example (touching):
         ranges_overlap((1, 5), (5, 10))
-        # Returns: True  # They share 5
+        Returns: True  # They share 5
     """
     return r1[0] <= r2[1] and r2[0] <= r1[1]
 
@@ -374,15 +437,15 @@ def range_intersection(
 
     Example (overlapping):
         range_intersection((1, 10), (5, 15))
-        # Returns: (5, 10)
+        Returns: (5, 10)
 
     Example (no overlap):
         range_intersection((1, 5), (7, 10))
-        # Returns: None
+        Returns: None
 
     Example (one contains other):
         range_intersection((1, 20), (5, 10))
-        # Returns: (5, 10)
+        Returns: (5, 10)
     """
     start = max(r1[0], r2[0])
     end = min(r1[1], r2[1])
@@ -400,21 +463,21 @@ def merge_ranges(
     Example:
         ranges = [(1, 5), (3, 8), (10, 15)]
         merge_ranges(ranges)
-        # Returns: [(1, 8), (10, 15)]  # First two merged
+        Returns: [(1, 8), (10, 15)]  # First two merged
 
     Example (adjacent ranges):
         ranges = [(1, 5), (6, 10), (20, 25)]
         merge_ranges(ranges)
-        # Returns: [(1, 10), (20, 25)]  # Adjacent 5-6 merged when inclusive=True
+        Returns: [(1, 10), (20, 25)]  # Adjacent 5-6 merged when inclusive=True
 
     Example (exclusive):
         ranges = [(1, 5), (6, 10), (20, 25)]
         merge_ranges(ranges, inclusive=False)
-        # Returns: [(1, 5), (6, 10), (20, 25)]  # No merge since exclusive
+        Returns: [(1, 5), (6, 10), (20, 25)]  # No merge since exclusive
     Example (unsorted input):
         ranges = [(10, 15), (1, 5), (3, 8)]
         merge_ranges(ranges)
-        # Returns: [(1, 8), (10, 15)]  # Sorted and merged
+        Returns: [(1, 8), (10, 15)]  # Sorted and merged
     """
     if not ranges:
         return []
@@ -442,15 +505,15 @@ def within_range(
 
     Example:
         within_range (1, [(1, 5), (3, 7), (10, 15), (14, 20)])
-        # Returns: True
+        Returns: True
 
     Example (exclusive):
         within_range (5, [(1, 5), (6, 10)], inclusive=False)
-        # Returns: False
+        Returns: False
 
     Example (contiguous):
         within_range (7, [(1, 3), (4, 6), (8, 10)])
-        # Returns: False
+        Returns: False
     """
     for start, end in ranges:
         if inclusive:
@@ -462,29 +525,48 @@ def within_range(
     return False
 
 
-def range_coverage(ranges: list[tuple[int, int]], inclusive: bool = True) -> int:
+def range_coverage(
+    ranges: list[tuple[int, int]], mode: RangeMode = RangeMode.HALF_OPEN
+) -> int:
     """
     Calculate total coverage of ranges.
 
     Args:
         ranges: List of ranges as (start, end)
+        mode: Counting mode (default: RangeMode.HALF_OPEN)
+            - RangeMode.INCLUSIVE: Both endpoints [start, end]
+            - RangeMode.HALF_OPEN: Exclude end [start, end)
+            - RangeMode.EXCLUSIVE: Exclude both (start, end)
 
     Returns:
         Total coverage as int
 
-    Example:
-        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)])
-        # Returns: 14
+    Examples:
+        For range (10, 15):
+        - INCLUSIVE: 6 values (10,11,12,13,14,15)
+        - HALF_OPEN: 5 values (10,11,12,13,14)
+        - EXCLUSIVE: 4 values (11,12,13,14)
 
-    Example (exclusive):
-        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], inclusive=False)
-        # Returns: 10
+        from fraocme.common import RangeMode
+        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], mode=RangeMode.INCLUSIVE)
+        Returns: 17
+
+        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], mode=RangeMode.HALF_OPEN)
+        Returns: 14
+
+        range_coverage([(3, 5), (10, 14), (16, 20), (12, 18)], mode=RangeMode.EXCLUSIVE)
+        Returns: 11
     """
-    merged = merge_ranges(ranges, inclusive=inclusive)
+    # Convert mode to inclusive boolean for merge_ranges
+    merge_inclusive = mode != RangeMode.EXCLUSIVE
+    merged = merge_ranges(ranges, inclusive=merge_inclusive)
+
     total = 0
     for start, end in merged:
-        if inclusive:
-            total += end - start + 1
-        else:
-            total += end - start - 1
+        if mode == RangeMode.INCLUSIVE:
+            total += end - start + 1  # [start, end]
+        elif mode == RangeMode.EXCLUSIVE:
+            total += end - start - 1  # (start, end)
+        else:  # HALF_OPEN
+            total += end - start  # [start, end)
     return total

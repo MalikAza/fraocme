@@ -37,6 +37,16 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(solver.day, 5)
         self.assertTrue(solver.debug_enabled)
 
+    def test_solver_show_traceback_default(self):
+        """Test solver shows traceback by default."""
+        solver = DummySolver(day=1)
+        self.assertTrue(solver.show_traceback)
+
+    def test_solver_show_traceback_disabled(self):
+        """Test solver can disable traceback display."""
+        solver = DummySolver(day=1, show_traceback=False)
+        self.assertFalse(solver.show_traceback)
+
     def test_solver_copy_input_default(self):
         """Test solver copies input by default."""
         solver = DummySolver(day=1)
@@ -120,6 +130,185 @@ class TestSolver(unittest.TestCase):
         """Test that part2 is abstract."""
         with self.assertRaises(TypeError):
             Solver(day=1)
+
+    def test_run_method_success(self):
+        """Test run method executes both parts successfully."""
+        import io
+        from contextlib import redirect_stdout
+
+        input_file = Path(self.temp_dir) / "input.txt"
+        input_file.write_text("line1\nline2\nline3")
+        self.solver.set_input_dir(Path(self.temp_dir))
+
+        # Capture output
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            results = self.solver.run([1, 2])
+
+        output = captured_output.getvalue()
+
+        # Check that both parts ran
+        self.assertIn("Part", output)
+        self.assertEqual(len(results), 2)
+        self.assertIn(1, results)
+        self.assertIn(2, results)
+
+        # Check results format (answer, elapsed_ms)
+        self.assertEqual(results[1][0], 3)  # part1 returns len(data)
+        self.assertEqual(results[2][0], 15)  # part2 returns sum of lengths
+        self.assertIsInstance(results[1][1], float)
+        self.assertIsInstance(results[2][1], float)
+
+    def test_run_method_single_part(self):
+        """Test run method with single part."""
+        import io
+        from contextlib import redirect_stdout
+
+        input_file = Path(self.temp_dir) / "input.txt"
+        input_file.write_text("line1\nline2")
+        self.solver.set_input_dir(Path(self.temp_dir))
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            results = self.solver.run([1])
+
+        self.assertEqual(len(results), 1)
+        self.assertIn(1, results)
+        self.assertNotIn(2, results)
+
+    def test_run_method_with_error(self):
+        """Test run method handles errors gracefully."""
+        import io
+        from contextlib import redirect_stdout
+
+        class ErrorSolver(Solver):
+            def parse(self, raw):
+                return raw
+
+            def part1(self, data):
+                raise ValueError("Test error")
+
+            def part2(self, data):
+                return 42
+
+        solver = ErrorSolver(day=1, show_traceback=False)
+        input_file = Path(self.temp_dir) / "input.txt"
+        input_file.write_text("test")
+        solver.set_input_dir(Path(self.temp_dir))
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            results = solver.run([1])
+
+        output = captured_output.getvalue()
+
+        # Check error was handled
+        self.assertIn("ERROR", output)
+        self.assertEqual(results[1][0], None)
+        self.assertEqual(results[1][1], 0.0)
+
+    def test_run_method_with_traceback(self):
+        """Test run method shows traceback when enabled."""
+        import io
+
+        class ErrorSolver(Solver):
+            def parse(self, raw):
+                return raw
+
+            def part1(self, data):
+                raise ValueError("Test error")
+
+            def part2(self, data):
+                return 42
+
+        solver = ErrorSolver(day=1, show_traceback=True)
+        input_file = Path(self.temp_dir) / "input.txt"
+        input_file.write_text("test")
+        solver.set_input_dir(Path(self.temp_dir))
+
+        # Capture stdout while running to ensure traceback is printed
+        captured_output = io.StringIO()
+        from contextlib import redirect_stdout
+
+        with redirect_stdout(captured_output):
+            solver.run([1])
+
+        output = captured_output.getvalue()
+
+        # Check traceback is shown
+        self.assertIn("Traceback", output)
+        self.assertIn("ValueError", output)
+
+    def test_debug_disabled(self):
+        """Test debug method does nothing when debug is disabled."""
+        import io
+        from contextlib import redirect_stdout
+
+        solver = DummySolver(day=1, debug=False)
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            solver.debug("This should not print")
+
+        self.assertEqual(captured_output.getvalue(), "")
+
+    def test_debug_enabled(self):
+        """Test debug method prints when debug is enabled."""
+        import io
+        from contextlib import redirect_stdout
+
+        solver = DummySolver(day=1, debug=True)
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            solver.debug("Debug message")
+
+        self.assertIn("Debug message", captured_output.getvalue())
+
+    def test_debug_with_callable(self):
+        """Test debug method handles callable arguments."""
+        import io
+        from contextlib import redirect_stdout
+
+        solver = DummySolver(day=1, debug=True)
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            solver.debug(lambda: "Callable result")
+
+        self.assertIn("Callable result", captured_output.getvalue())
+
+    def test_debug_with_callable_returning_none(self):
+        """Test debug method handles callable returning None."""
+        import io
+        from contextlib import redirect_stdout
+
+        solver = DummySolver(day=1, debug=True)
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            solver.debug(lambda: None)
+
+        # Should not print anything for None result
+        self.assertEqual(captured_output.getvalue().strip(), "")
+
+    def test_debug_with_callable_raising_exception(self):
+        """Test debug method handles callable that raises exception."""
+        import io
+        from contextlib import redirect_stdout
+
+        solver = DummySolver(day=1, debug=True)
+
+        def error_func():
+            raise ValueError("Test error")
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            solver.debug(error_func)
+
+        output = captured_output.getvalue()
+        self.assertIn("debug callable raised", output)
+        self.assertIn("Test error", output)
 
 
 class TestRunner(unittest.TestCase):
@@ -261,6 +450,42 @@ class DaySolver(Solver):
         solver = self.runner.load_solver(1, debug=True)
         self.assertTrue(solver.debug_enabled)
 
+    def test_load_solver_with_show_traceback_default(self):
+        """Test load_solver shows traceback by default."""
+        day_dir = self.runner.get_day_dir(1)
+        day_dir.mkdir(parents=True)
+
+        solution_code = """
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): return raw.strip()
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+"""
+        (day_dir / "solution.py").write_text(solution_code)
+
+        solver = self.runner.load_solver(1)
+        self.assertTrue(solver.show_traceback)
+
+    def test_load_solver_with_show_traceback_disabled(self):
+        """Test load_solver respects show_traceback flag."""
+        day_dir = self.runner.get_day_dir(1)
+        day_dir.mkdir(parents=True)
+
+        solution_code = """
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): return raw.strip()
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+"""
+        (day_dir / "solution.py").write_text(solution_code)
+
+        solver = self.runner.load_solver(1, show_traceback=False)
+        self.assertFalse(solver.show_traceback)
+
     def test_load_solver_no_solver_class(self):
         """Test load_solver raises error if no Solver subclass found."""
         day_dir = self.runner.get_day_dir(1)
@@ -271,6 +496,142 @@ class DaySolver(Solver):
 
         with self.assertRaises(ValueError):
             self.runner.load_solver(1)
+
+    def test_load_solver_with_import_error(self):
+        """Test load_solver handles module loading errors."""
+        day_dir = self.runner.get_day_dir(1)
+        day_dir.mkdir(parents=True)
+
+        # Create a solution file with syntax error
+        (day_dir / "solution.py").write_text("this is not valid python syntax {{")
+
+        with self.assertRaises(Exception):
+            self.runner.load_solver(1)
+
+    def test_run_day_success(self):
+        """Test run_day executes a day successfully."""
+        import io
+        from contextlib import redirect_stdout
+
+        day_dir = self.runner.get_day_dir(1)
+        day_dir.mkdir(parents=True)
+
+        solution_code = """
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): return raw.strip()
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+"""
+        (day_dir / "solution.py").write_text(solution_code)
+        (day_dir / "input.txt").write_text("test input")
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            results = self.runner.run_day(1)
+
+        self.assertEqual(results[1][0], 42)
+        self.assertEqual(results[2][0], 99)
+
+    def test_run_day_with_parts_filter(self):
+        """Test run_day with specific parts."""
+        import io
+        from contextlib import redirect_stdout
+
+        day_dir = self.runner.get_day_dir(1)
+        day_dir.mkdir(parents=True)
+
+        solution_code = """
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): return raw.strip()
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+"""
+        (day_dir / "solution.py").write_text(solution_code)
+        (day_dir / "input.txt").write_text("test input")
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            results = self.runner.run_day(1, parts=[1])
+
+        self.assertEqual(len(results), 1)
+        self.assertIn(1, results)
+        self.assertNotIn(2, results)
+
+    def test_run_all_with_multiple_days(self):
+        """Test run_all executes all available days."""
+        import io
+        from contextlib import redirect_stdout
+
+        solution_code = """
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): return raw.strip()
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+"""
+
+        # Create days 1 and 2
+        for day in [1, 2]:
+            day_dir = self.runner.get_day_dir(day)
+            day_dir.mkdir(parents=True)
+            (day_dir / "solution.py").write_text(solution_code)
+            (day_dir / "input.txt").write_text("test")
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            results = self.runner.run_all()
+
+        self.assertEqual(len(results), 2)
+        self.assertIn(1, results)
+        self.assertIn(2, results)
+
+    def test_run_all_handles_errors(self):
+        """Test run_all continues on error."""
+        import io
+        from contextlib import redirect_stdout
+
+        # Day 1 - works
+        day1_dir = self.runner.get_day_dir(1)
+        day1_dir.mkdir(parents=True)
+        (day1_dir / "solution.py").write_text("""
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): return raw.strip()
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+""")
+        (day1_dir / "input.txt").write_text("test")
+
+        # Day 2 - has error
+        day2_dir = self.runner.get_day_dir(2)
+        day2_dir.mkdir(parents=True)
+        (day2_dir / "solution.py").write_text("""
+from fraocme.core import Solver
+
+class DaySolver(Solver):
+    def parse(self, raw): raise ValueError("Parse error")
+    def part1(self, data): return 42
+    def part2(self, data): return 99
+""")
+        (day2_dir / "input.txt").write_text("test")
+
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            results = self.runner.run_all()
+
+        # Day 1 should succeed
+        self.assertIn(1, results)
+        # Day 2 should fail but not crash: solver prints error details
+        output = captured_output.getvalue()
+        # Expect the solver error output (ERROR and Traceback)
+        self.assertIn("ERROR - Parse error", output)
+        self.assertIn("Traceback", output)
 
 
 if __name__ == "__main__":

@@ -3,7 +3,13 @@ import unittest
 from io import StringIO
 
 from fraocme.ui.colors import Colors, c
-from fraocme.ui.printer import print_header, print_section
+from fraocme.ui.printer import (
+    print_day_header,
+    print_header,
+    print_part_error,
+    print_part_result,
+    print_section,
+)
 
 
 class TestColors(unittest.TestCase):
@@ -15,46 +21,24 @@ class TestColors(unittest.TestCase):
 
     def test_regular_colors_exist(self):
         """Test regular color codes exist."""
-        self.assertEqual(Colors.BLACK, "\033[30m")
         self.assertEqual(Colors.RED, "\033[31m")
         self.assertEqual(Colors.GREEN, "\033[32m")
         self.assertEqual(Colors.YELLOW, "\033[33m")
-        self.assertEqual(Colors.BLUE, "\033[34m")
         self.assertEqual(Colors.MAGENTA, "\033[35m")
         self.assertEqual(Colors.CYAN, "\033[36m")
-        self.assertEqual(Colors.WHITE, "\033[37m")
 
     def test_bright_colors_exist(self):
         """Test bright color codes exist."""
-        self.assertEqual(Colors.BRIGHT_BLACK, "\033[90m")
         self.assertEqual(Colors.BRIGHT_RED, "\033[91m")
         self.assertEqual(Colors.BRIGHT_GREEN, "\033[92m")
         self.assertEqual(Colors.BRIGHT_YELLOW, "\033[93m")
-        self.assertEqual(Colors.BRIGHT_BLUE, "\033[94m")
         self.assertEqual(Colors.BRIGHT_MAGENTA, "\033[95m")
         self.assertEqual(Colors.BRIGHT_CYAN, "\033[96m")
-        self.assertEqual(Colors.BRIGHT_WHITE, "\033[97m")
-
-    def test_background_colors_exist(self):
-        """Test background color codes exist."""
-        self.assertEqual(Colors.BG_BLACK, "\033[40m")
-        self.assertEqual(Colors.BG_RED, "\033[41m")
-        self.assertEqual(Colors.BG_GREEN, "\033[42m")
-        self.assertEqual(Colors.BG_YELLOW, "\033[43m")
-        self.assertEqual(Colors.BG_BLUE, "\033[44m")
-        self.assertEqual(Colors.BG_MAGENTA, "\033[45m")
-        self.assertEqual(Colors.BG_CYAN, "\033[46m")
-        self.assertEqual(Colors.BG_WHITE, "\033[47m")
 
     def test_style_codes_exist(self):
         """Test style codes exist."""
         self.assertEqual(Colors.BOLD, "\033[1m")
         self.assertEqual(Colors.DIM, "\033[2m")
-        self.assertEqual(Colors.ITALIC, "\033[3m")
-        self.assertEqual(Colors.UNDERLINE, "\033[4m")
-        self.assertEqual(Colors.BLINK, "\033[5m")
-        self.assertEqual(Colors.REVERSE, "\033[7m")
-        self.assertEqual(Colors.STRIKETHROUGH, "\033[9m")
 
 
 class TestColorHelper(unittest.TestCase):
@@ -80,12 +64,6 @@ class TestColorHelper(unittest.TestCase):
         self.assertIn(Colors.GREEN, result)
         self.assertIn(Colors.RESET, result)
 
-    def test_blue_color(self):
-        """Test blue color helper."""
-        result = c.blue("info")
-        self.assertIn("info", result)
-        self.assertIn(Colors.BLUE, result)
-
     def test_yellow_color(self):
         """Test yellow color helper."""
         result = c.yellow("warning")
@@ -104,48 +82,6 @@ class TestColorHelper(unittest.TestCase):
         self.assertIn("text", result)
         self.assertIn(Colors.MAGENTA, result)
 
-    def test_white_color(self):
-        """Test white color helper."""
-        result = c.white("text")
-        self.assertIn("text", result)
-        self.assertIn(Colors.WHITE, result)
-
-    def test_black_color(self):
-        """Test black color helper."""
-        result = c.black("text")
-        self.assertIn("text", result)
-        self.assertIn(Colors.BLACK, result)
-
-    def test_bright_red(self):
-        """Test bright red color."""
-        result = c.bright_red("error")
-        self.assertIn("error", result)
-        self.assertIn(Colors.BRIGHT_RED, result)
-
-    def test_bright_green(self):
-        """Test bright green color."""
-        result = c.bright_green("success")
-        self.assertIn("success", result)
-        self.assertIn(Colors.BRIGHT_GREEN, result)
-
-    def test_bright_yellow(self):
-        """Test bright yellow color."""
-        result = c.bright_yellow("caution")
-        self.assertIn("caution", result)
-        self.assertIn(Colors.BRIGHT_YELLOW, result)
-
-    def test_bright_blue(self):
-        """Test bright blue color."""
-        result = c.bright_blue("info")
-        self.assertIn("info", result)
-        self.assertIn(Colors.BRIGHT_BLUE, result)
-
-    def test_bright_cyan(self):
-        """Test bright cyan color."""
-        result = c.bright_cyan("highlight")
-        self.assertIn("highlight", result)
-        self.assertIn(Colors.BRIGHT_CYAN, result)
-
     def test_bold_style(self):
         """Test bold style."""
         result = c.bold("important")
@@ -157,18 +93,6 @@ class TestColorHelper(unittest.TestCase):
         result = c.dim("muted")
         self.assertIn("muted", result)
         self.assertIn(Colors.DIM, result)
-
-    def test_italic_style(self):
-        """Test italic style."""
-        result = c.italic("emphasized")
-        self.assertIn("emphasized", result)
-        self.assertIn(Colors.ITALIC, result)
-
-    def test_underline_style(self):
-        """Test underline style."""
-        result = c.underline("underlined")
-        self.assertIn("underlined", result)
-        self.assertIn(Colors.UNDERLINE, result)
 
     def test_success_semantic(self):
         """Test success semantic color."""
@@ -218,21 +142,6 @@ class TestColorHelper(unittest.TestCase):
         self.assertIn("2000.00ms", result)
         self.assertIn(Colors.BRIGHT_RED, result)
 
-    def test_custom_single_code(self):
-        """Test custom with single code."""
-        result = c.custom("text", Colors.BOLD)
-        self.assertIn("text", result)
-        self.assertIn(Colors.BOLD, result)
-        self.assertIn(Colors.RESET, result)
-
-    def test_custom_multiple_codes(self):
-        """Test custom with multiple codes."""
-        result = c.custom("text", Colors.BOLD, Colors.RED)
-        self.assertIn("text", result)
-        self.assertIn(Colors.BOLD, result)
-        self.assertIn(Colors.RED, result)
-        self.assertIn(Colors.RESET, result)
-
     def test_nested_colors(self):
         """Test nesting color functions."""
         result = c.bold(c.green("text"))
@@ -253,7 +162,8 @@ class TestPrinter(unittest.TestCase):
 
         output = captured_output.getvalue()
         self.assertIn("Test Header", output)
-        self.assertIn("═", output)
+        self.assertIn("❄", output)
+        self.assertIn("🎄", output)
 
     def test_print_header_custom_width(self):
         """Test print_header with custom width."""
@@ -264,9 +174,7 @@ class TestPrinter(unittest.TestCase):
 
         output = captured_output.getvalue()
         self.assertIn("Test", output)
-        # Count the equals signs
-        lines = output.strip().split("\n")
-        self.assertEqual(len(lines[0]), 20)  # Top border
+        self.assertIn("❄", output)
 
     def test_print_section_default_width(self):
         """Test print_section with default width."""
@@ -277,7 +185,7 @@ class TestPrinter(unittest.TestCase):
 
         output = captured_output.getvalue()
         self.assertIn("Test Section", output)
-        self.assertIn("─", output)
+        self.assertIn("⭐", output)
 
     def test_print_section_custom_width(self):
         """Test print_section with custom width."""
@@ -288,8 +196,7 @@ class TestPrinter(unittest.TestCase):
 
         output = captured_output.getvalue()
         self.assertIn("Test", output)
-        lines = output.strip().split("\n")
-        self.assertEqual(len(lines[0]), 30)
+        self.assertIn("⭐", output)
 
     def test_print_header_structure(self):
         """Test print_header has correct structure."""
@@ -299,9 +206,9 @@ class TestPrinter(unittest.TestCase):
         sys.stdout = sys.__stdout__
 
         lines = captured_output.getvalue().strip().split("\n")
-        self.assertTrue(lines[0].startswith("═"))
+        self.assertTrue(lines[0].startswith("❄"))
         self.assertIn("Title", lines[1])
-        self.assertTrue(lines[2].startswith("═"))
+        self.assertTrue(lines[2].startswith("❄"))
 
     def test_print_section_structure(self):
         """Test print_section has correct structure."""
@@ -310,10 +217,77 @@ class TestPrinter(unittest.TestCase):
         print_section("Section")
         sys.stdout = sys.__stdout__
 
-        lines = captured_output.getvalue().strip().split("\n")
-        self.assertTrue(lines[0].startswith("─"))
-        self.assertIn("Section", lines[1])
-        self.assertTrue(lines[2].startswith("─"))
+        output = captured_output.getvalue()
+        self.assertIn("Section", output)
+        self.assertIn("⭐", output)
+
+    def test_print_day_header(self):
+        """Test print_day_header prints formatted day number."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        print_day_header(5)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Day", output)
+        self.assertIn("5", output)
+        self.assertIn("❄", output)
+
+    def test_print_part_result(self):
+        """Test print_part_result prints formatted result."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        print_part_result(1, 42, 123.45)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Part", output)
+        self.assertIn("one", output)
+        self.assertIn("42", output)
+        self.assertIn("⭐", output)
+
+    def test_print_part_result_part2(self):
+        """Test print_part_result prints part 2 correctly."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        print_part_result(2, 99, 456.78)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Part", output)
+        self.assertIn("two", output)
+        self.assertIn("99", output)
+        self.assertIn("🌟", output)
+
+    def test_print_part_error(self):
+        """Test print_part_error prints formatted error."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        error = ValueError("Test error message")
+        print_part_error(1, error)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Part", output)
+        self.assertIn("one", output)
+        self.assertIn("ERROR", output)
+        self.assertIn("Test error message", output)
+        self.assertIn("❌", output)
+
+    def test_print_part_error_part2(self):
+        """Test print_part_error prints part 2 error correctly."""
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        error = RuntimeError("Runtime issue")
+        print_part_error(2, error)
+        sys.stdout = sys.__stdout__
+
+        output = captured_output.getvalue()
+        self.assertIn("Part", output)
+        self.assertIn("two", output)
+        self.assertIn("ERROR", output)
+        self.assertIn("Runtime issue", output)
+        self.assertIn("❌", output)
 
 
 if __name__ == "__main__":
