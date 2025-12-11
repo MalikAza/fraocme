@@ -128,7 +128,6 @@ This allows adding more examples in each category as needed.
   - `print_grid_heatmap()` - value-based color coding
   - `print_grid_path()` - path visualization with arrows
   - `print_grid_diff()` - comparing two grids
-  - `print_grid_region()` - highlighting regions
   - `print_grid_neighbors()` - neighbor visualization
 - Coordinate display options
 - Truncation for large grids

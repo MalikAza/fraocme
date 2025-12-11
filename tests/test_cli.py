@@ -319,57 +319,83 @@ class TestCmdRun(unittest.TestCase):
         mock_runner.run_all.assert_called_once_with(
             parts=[1, 2], debug=False, show_traceback=True, use_example=True
         )
-        mock_stats.save.assert_called_once()
+        mock_stats.save.assert_not_called()
 
 
 class TestCmdStats(unittest.TestCase):
     """Test cmd_stats function."""
 
+    @patch("fraocme.profiling.printer.print_stats_day")
+    @patch("fraocme.profiling.printer.print_stats_summary_table")
     @patch("fraocme.cli.print_header")
     @patch("fraocme.cli.Stats")
-    def test_cmd_stats_all(self, mock_stats_class, mock_print_header):
+    def test_cmd_stats_all(
+        self, mock_stats_class, mock_print_header, mock_summary_table, mock_stats_day
+    ):
         """Test stats command for all days."""
         mock_stats = MagicMock()
         mock_stats_class.return_value = mock_stats
+        # Simulate two days of data
+        mock_stats.get_all.return_value = {
+            "day_01": {"part1": {}},
+            "day_02": {"part1": {}},
+        }
 
         args = MagicMock()
         args.day = None
         args.best = False
+        args.reset = False
+        args.all = False
 
         cmd_stats(args)
 
         mock_print_header.assert_called_once()
-        mock_stats.print_all.assert_called_once_with(best_only=False)
+        self.assertEqual(mock_stats_day.call_count, 2)
+        mock_summary_table.assert_not_called()
 
+    @patch("fraocme.profiling.printer.print_stats_day")
     @patch("fraocme.cli.print_header")
     @patch("fraocme.cli.Stats")
-    def test_cmd_stats_specific_day(self, mock_stats_class, mock_print_header):
+    def test_cmd_stats_specific_day(
+        self, mock_stats_class, mock_print_header, mock_stats_day
+    ):
         """Test stats command for specific day."""
         mock_stats = MagicMock()
         mock_stats_class.return_value = mock_stats
+        mock_stats.get_day.return_value = {"part1": {}}
 
         args = MagicMock()
         args.day = 5
         args.best = False
+        args.reset = False
+        args.all = False
 
         cmd_stats(args)
 
-        mock_stats.print_day.assert_called_once_with(5, best_only=False)
+        mock_stats_day.assert_called_once_with(
+            5, mock_stats.get_day.return_value, best_only=False
+        )
 
+    @patch("fraocme.profiling.printer.print_stats_summary_table")
     @patch("fraocme.cli.print_header")
     @patch("fraocme.cli.Stats")
-    def test_cmd_stats_best_only(self, mock_stats_class, mock_print_header):
+    def test_cmd_stats_best_only(
+        self, mock_stats_class, mock_print_header, mock_summary_table
+    ):
         """Test stats command with best_only flag."""
         mock_stats = MagicMock()
         mock_stats_class.return_value = mock_stats
+        mock_stats.get_all.return_value = {"day_01": {"part1": {}}}
 
         args = MagicMock()
         args.day = None
         args.best = True
+        args.reset = False
+        args.all = False
 
         cmd_stats(args)
 
-        mock_stats.print_all.assert_called_once_with(best_only=True)
+        mock_summary_table.assert_called_once_with(mock_stats.get_all.return_value)
 
 
 class TestCreateCommand(unittest.TestCase):

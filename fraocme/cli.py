@@ -56,6 +56,12 @@ def main():
     stats_parser.add_argument(
         "--best", action="store_true", help="Show only best times"
     )
+    stats_parser.add_argument(
+        "--reset", action="store_true", help="Reset stats for a day or all days"
+    )
+    stats_parser.add_argument(
+        "--all", action="store_true", help="Apply reset to all days"
+    )
 
     # ─────────────────────────────────────────────────────────
     # create command
@@ -104,7 +110,8 @@ def cmd_run(args):
             show_traceback=not args.no_traceback,
             use_example=args.example,
         )
-        if not args.no_stats:
+
+        if not args.no_stats and not args.example:
             for day, day_results in results.items():
                 stats.update(day, day_results)
             stats.save()
@@ -131,7 +138,8 @@ def cmd_run(args):
         use_example=args.example,
     )
 
-    if not args.no_stats:
+    # Prevent stats update if --example is used
+    if not args.no_stats and not args.example:
         stats.update(args.day, results)
         stats.save()
 
@@ -140,10 +148,30 @@ def cmd_stats(args):
     """Handle stats command."""
     print_header("Profiling Statistics")
     stats = Stats()
+    from fraocme.profiling.printer import print_stats_day, print_stats_summary_table
+
+    if args.reset:
+        if args.all:
+            stats.reset_all()
+            print(c.success("✓ All stats reset."))
+        elif args.day is not None:
+            stats.reset_day(args.day)
+            print(c.success(f"✓ Stats for day {args.day} reset."))
+        else:
+            print(c.error("Specify a day to reset or use --all."))
+        return
     if args.day is not None:
-        stats.print_day(args.day, best_only=args.best)
+        data = stats.get_day(args.day)
+        print_stats_day(args.day, data, best_only=args.best)
     else:
-        stats.print_all(best_only=args.best)
+        data = stats.get_all()
+        if args.best:
+            print_stats_summary_table(data)
+        else:
+            days = sorted(data.keys(), key=lambda x: int(x.split("_")[1]))
+            for day_key in days:
+                day_num = int(day_key.split("_")[1])
+                print_stats_day(day_num, data[day_key], best_only=False)
 
 
 def cmd_create(args):

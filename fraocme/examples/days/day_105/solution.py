@@ -6,7 +6,7 @@ Demonstrates flood fill and region finding algorithms.
 
 from fraocme import Solver
 from fraocme.grid import Grid
-from fraocme.grid.printer import print_grid_region
+from fraocme.grid.printer import print_grid
 from fraocme.ui.colors import c
 
 
@@ -51,9 +51,7 @@ class Day105(Solver):
 
         # Visualize the region
         self.debug(c.cyan("Region visualization:"))
-        self.debug(
-            lambda: print_grid_region(grid, region, separator=" ", show_coords=True)
-        )
+        self.debug(lambda: print_grid(grid, region, separator=" ", show_coords=True))
 
         return region.size
 
@@ -98,7 +96,7 @@ class Day105(Solver):
         if sorted_regions:
             self.debug(c.cyan("Largest region visualization:"))
             self.debug(
-                lambda: print_grid_region(
+                lambda: print_grid(
                     grid, sorted_regions[0], separator=" ", show_coords=True
                 )
             )

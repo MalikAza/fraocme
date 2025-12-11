@@ -343,7 +343,9 @@ class TestStats(unittest.TestCase):
         self.assertIsNot(all_data, stats._data)
 
     def test_stats_print_day(self):
-        """Test Stats print_day function."""
+        """Test print_stats_day function."""
+        from fraocme.profiling import printer
+
         stats = Stats(path=self.stats_file)
         results = {1: (42, 100.0)}
         stats.update(1, results)
@@ -351,7 +353,7 @@ class TestStats(unittest.TestCase):
         captured = StringIO()
         sys.stdout = captured
 
-        stats.print_day(1)
+        printer.print_stats_day(1, stats.get_day(1))
 
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
@@ -360,13 +362,15 @@ class TestStats(unittest.TestCase):
         self.assertIn("42", output)
 
     def test_stats_print_day_no_stats(self):
-        """Test Stats print_day with missing day."""
+        """Test print_stats_day with missing day."""
+        from fraocme.profiling import printer
+
         stats = Stats(path=self.stats_file)
 
         captured = StringIO()
         sys.stdout = captured
 
-        stats.print_day(999)
+        printer.print_stats_day(999, stats.get_day(999))
 
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
@@ -374,18 +378,23 @@ class TestStats(unittest.TestCase):
         self.assertIn("No stats", output)
 
     def test_stats_print_all_empty(self):
-        """Test Stats print_all with no data."""
+        """Test print_stats_summary_table with no data."""
+        import re
+
+        from fraocme.profiling import printer
+
         stats = Stats(path=self.stats_file)
 
         captured = StringIO()
         sys.stdout = captured
 
-        stats.print_all()
+        printer.print_stats_summary_table(stats.get_all())
 
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-
-        self.assertIn("No stats", output)
+        # Strip ANSI codes
+        output = re.sub(r"\x1b\[[0-9;]*m", "", output)
+        self.assertIn("No statistics available.", output)
 
     def test_stats_default_path(self):
         """Test Stats uses default path."""
@@ -393,7 +402,9 @@ class TestStats(unittest.TestCase):
         self.assertEqual(stats.path, Path.cwd() / "stats.json")
 
     def test_stats_print_day_best_only(self):
-        """Test Stats print_day with best_only flag."""
+        """Test print_stats_day with best_only flag."""
+        from fraocme.profiling import printer
+
         stats = Stats(path=self.stats_file)
         results = {1: (42, 100.0), 2: (99, 200.0)}
         stats.update(1, results)
@@ -401,7 +412,7 @@ class TestStats(unittest.TestCase):
         captured = StringIO()
         sys.stdout = captured
 
-        stats.print_day(1, best_only=True)
+        printer.print_stats_day(1, stats.get_day(1), best_only=True)
 
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
@@ -414,7 +425,11 @@ class TestStats(unittest.TestCase):
         self.assertNotIn("Last", output)
 
     def test_stats_print_all_with_data(self):
-        """Test Stats print_all with data."""
+        """Test print_stats_summary_table with data."""
+        import re
+
+        from fraocme.profiling import printer
+
         stats = Stats(path=self.stats_file)
         results1 = {1: (42, 100.0), 2: (99, 200.0)}
         results2 = {1: (123, 50.0)}
@@ -424,18 +439,21 @@ class TestStats(unittest.TestCase):
         captured = StringIO()
         sys.stdout = captured
 
-        stats.print_all(best_only=False)
+        printer.print_stats_summary_table(stats.get_all())
 
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
-
-        self.assertIn("Advent of Code Stats", output)
-        self.assertIn("Day 1", output)
-        self.assertIn("Day 2", output)
+        # Strip ANSI codes
+        output = re.sub(r"\x1b\[[0-9;]*m", "", output)
+        self.assertIn("Profiling Statistics", output)
+        self.assertIn("Day", output)
         self.assertIn("Total", output)
 
     def test_stats_print_all_best_only(self):
-        """Test Stats print_all with best_only flag."""
+        """Test print_stats_summary_table with best_only
+        flag (no direct param, just call)."""
+        from fraocme.profiling import printer
+
         stats = Stats(path=self.stats_file)
         results1 = {1: (42, 100.0), 2: (99, 200.0)}
         results2 = {1: (123, 50.0)}
@@ -445,23 +463,25 @@ class TestStats(unittest.TestCase):
         captured = StringIO()
         sys.stdout = captured
 
-        stats.print_all(best_only=True)
+        printer.print_stats_summary_table(stats.get_all())
 
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
 
-        self.assertIn("Advent of Code Stats", output)
+        self.assertIn("Profiling Statistics", output)
         # Should show summary table
         self.assertIn("Day", output)
-        self.assertIn("Part 1", output)
-        self.assertIn("Part 2", output)
+        self.assertIn("P1", output)
+        self.assertIn("P2", output)
         # Should not show detailed stats
         self.assertNotIn("Runs", output)
         self.assertNotIn("Last", output)
         self.assertIn("Total", output)
 
     def test_stats_print_day_with_partial_results(self):
-        """Test Stats print_day when only one part has data."""
+        """Test print_stats_day when only one part has data."""
+        from fraocme.profiling import printer
+
         stats = Stats(path=self.stats_file)
         results = {1: (42, 100.0)}  # Only part 1
         stats.update(1, results)
@@ -469,7 +489,7 @@ class TestStats(unittest.TestCase):
         captured = StringIO()
         sys.stdout = captured
 
-        stats.print_day(1, best_only=False)
+        printer.print_stats_day(1, stats.get_day(1), best_only=False)
 
         sys.stdout = sys.__stdout__
         output = captured.getvalue()
@@ -480,9 +500,10 @@ class TestStats(unittest.TestCase):
         self.assertNotIn("Part 2", output)
 
     def test_stats_color_time_str_none(self):
-        """Test Stats colors None times as muted."""
-        stats = Stats(path=self.stats_file)
-        colored = stats._color_time_str(None, "-")
+        """Test color_time_str colors None times as muted."""
+        from fraocme.profiling import printer
+
+        colored = printer.color_time_str(None, "-")
         self.assertIn("-", colored)
 
 

@@ -12,7 +12,6 @@ from fraocme.grid.printer import (
     print_grid_heatmap,
     print_grid_neighbors,
     print_grid_path,
-    print_grid_region,
 )
 from fraocme.ui.colors import c
 
@@ -97,9 +96,7 @@ class Day102(Solver):
         from fraocme.grid.regions import Region
 
         region = Region(frozenset(high_positions))
-        self.debug(
-            lambda: print_grid_region(grid, region, separator=" ", show_coords=True)
-        )
+        self.debug(lambda: print_grid(grid, region, separator=" ", show_coords=True))
 
         # 4. Large grid truncation demo
         self.debug(c.cyan("\n4. Large grid truncation (10x5 display):"))
