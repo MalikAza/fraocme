@@ -84,16 +84,18 @@ class Day103(Solver):
             time.sleep(1)
 
             # Animate with trail
-            print_grid_animated(
-                grid,
-                positions[:50],  # First 50 steps
-                delay=0.1,  # 100ms per frame
-                trail_length=5,  # Show last 5 positions
-                separator=" ",
-                show_coords=True,
-                max_cols=10,
-                max_rows=10,
-                erase_after=True,  # Erase grid after animation
+            self.debug(
+                lambda: print_grid_animated(
+                    grid,
+                    positions[:50],  # First 50 steps
+                    delay=0.1,  # 100ms per frame
+                    trail_length=5,  # Show last 5 positions
+                    separator=" ",
+                    show_coords=True,
+                    max_cols=10,
+                    max_rows=10,
+                    erase_after=True,  # Erase grid after animation
+                )
             )
 
         return len(set(positions))
@@ -119,15 +121,17 @@ class Day103(Solver):
             time.sleep(1)
 
             # Animate with directions
-            print_grid_animated_with_direction(
-                grid,
-                positions[:300],  # First 30 steps
-                directions[:300],
-                delay=0.1,  # 100ms per frame
-                trail_length=8,  # Longer trail
-                separator=" ",
-                max_cols=25,
-                show_coords=True,
+            self.debug(
+                lambda: print_grid_animated_with_direction(
+                    grid,
+                    positions[:300],  # First 30 steps
+                    directions[:300],
+                    delay=0.1,  # 100ms per frame
+                    trail_length=8,  # Longer trail
+                    separator=" ",
+                    max_cols=25,
+                    show_coords=True,
+                )
             )
 
         return len(set(positions))
