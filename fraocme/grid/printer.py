@@ -193,6 +193,7 @@ def print_grid(
             )
         print(footer)
 
+
 def print_grid_heatmap(
     grid: "Grid",
     value_fn: Callable[[Any], float] | None = None,
