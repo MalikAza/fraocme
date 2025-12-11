@@ -66,7 +66,7 @@ def print_grid(
     highlight: set[Position] | None = None,
     max_rows: int | None = 25,
     max_cols: int | None = 80,
-    show_coords: bool = False,
+    show_coords: bool = True,
     center: Position | None = None,
 ) -> None:
     """
@@ -101,22 +101,69 @@ def print_grid(
     truncated_rows = height > num_rows
     truncated_cols = width > num_cols
 
+    # Determine grid type and element type for display
+    (
+        type(grid).__name__
+        if not hasattr(grid, "_grid_type_str")
+        else grid._grid_type_str
+    )
+    # Try to infer element type
+    element_type = None
+    try:
+        sample = None
+        if hasattr(grid, "at"):
+            for y in range(height):
+                for x in range(width):
+                    sample = grid.at(x, y)
+                    if sample is not None:
+                        break
+                if sample is not None:
+                    break
+        elif isinstance(grid, list) and grid and grid[0]:
+            sample = grid[0][0]
+        if sample is not None:
+            element_type = type(sample).__name__
+    except Exception:
+        pass
+    type_str = "Grid"
+    if element_type:
+        type_str += f"[{element_type}]"
+    type_str += f"({width}x{height})"
+    info = type_str
+    if center:
+        info += f", Center: {center}"
+    if truncated_rows or truncated_cols:
+        info += f" (viewport: {num_cols}x{num_rows})"
+    print(c.dim(info))
+
     # Print header if coords enabled
     if show_coords and num_cols > 0:
-        header = "   "
-        header += separator.join(str((start_x + x) % 10) for x in range(num_cols))
+        max_col = start_x + num_cols - 1
+        digits_spacer = "   "  # Default for digits
+        if max_col >= 10:
+            upper_parts = [""]
+            for x in range(num_cols):
+                col_num = start_x + x
+                if col_num % 10 == 0 and col_num > 0:
+                    upper_parts.append(str(col_num // 10))
+                else:
+                    upper_parts.append(" ")
+            print(c.dim(separator.join(upper_parts)))
+
+        col_header = digits_spacer + separator.join(
+            str((start_x + x + 1) % 10) for x in range(num_cols)
+        )
         if truncated_cols:
-            header += f" {c.dim('...')}"
-        print(c.dim(header))
+            col_header += f" {c.dim('...')}"
+        print(c.bold(col_header))
 
     # Print rows
     for row_idx in range(num_rows):
         y = start_y + row_idx
         line_parts = []
 
-        # Row coordinate
         if show_coords:
-            line_parts.append(c.dim(f"{y:2} "))
+            line_parts.append(c.bold(f"{y + 1:2} "))
 
         # Cells
         for col_idx in range(num_cols):
@@ -153,7 +200,7 @@ def print_grid_heatmap(
     separator: str = " ",
     max_rows: int | None = 25,
     max_cols: int | None = 80,
-    show_coords: bool = False,
+    show_coords: bool = True,
     center: Position | None = None,
 ) -> None:
     """
@@ -259,7 +306,7 @@ def print_grid_path(
     separator: str = " ",
     max_rows: int | None = 25,
     max_cols: int | None = 80,
-    show_coords: bool = False,
+    show_coords: bool = True,
     center: Position | None = None,
 ) -> None:
     """
@@ -372,7 +419,7 @@ def print_grid_diff(
     separator: str = " ",
     max_rows: int | None = 25,
     max_cols: int | None = 80,
-    show_coords: bool = False,
+    show_coords: bool = True,
     center: Position | None = None,
 ) -> None:
     """
@@ -465,7 +512,7 @@ def print_grid_neighbors(
     separator: str = " ",
     max_rows: int | None = 25,
     max_cols: int | None = 80,
-    show_coords: bool = False,
+    show_coords: bool = True,
 ) -> None:
     """
     Print grid with neighbors of a position highlighted.
@@ -608,6 +655,7 @@ def print_grid_animated(
     else:
         frame_indices = list(range(total_positions))
 
+    prev_total_lines = None
     for frame_num, step in enumerate(frame_indices):
         current_pos = positions[step]
 
@@ -616,7 +664,7 @@ def print_grid_animated(
             grid.width, grid.height, max_cols, max_rows, center=current_pos
         )
 
-        # Calculate total lines for cursor repositioning
+        # Calculate total lines for cursor repositioning for THIS frame
         total_lines = num_rows
         if show_coords:
             max_col = start_x + num_cols - 1
@@ -627,9 +675,10 @@ def print_grid_animated(
             total_lines += 1  # Step counter line
 
         # Move cursor up to overwrite previous frame (except first frame)
-        if frame_num > 0:
-            # ANSI escape: move cursor up N lines
-            print(f"\033[{total_lines}A", end="")
+        if frame_num > 0 and prev_total_lines is not None:
+            print(f"\033[{prev_total_lines}A", end="")
+
+        prev_total_lines = total_lines
 
         # Calculate trail positions
         trail_positions = set()
@@ -646,7 +695,7 @@ def print_grid_animated(
             # Build upper digits line (tens, hundreds, etc.)
             max_col = start_x + num_cols - 1
             if max_col >= 10:
-                upper_parts = ["   "]  # Row number padding
+                upper_parts = ["  "]  # Row number padding
                 for x in range(num_cols):
                     col_num = start_x + x
                     if col_num % 10 == 0 and col_num > 0:
@@ -693,18 +742,9 @@ def print_grid_animated(
         time.sleep(delay)
 
     if erase_after:
-        # Calculate lines to clear (same as total_lines used during animation)
-        total_lines = num_rows
-        if show_coords:
-            max_col = start_x + num_cols - 1
-            total_lines += 1  # Ones header line (always)
-            if max_col >= 10:
-                total_lines += 1  # Upper digits line
-        if show_step_count:
-            total_lines += 1  # Step counter line
-        total_lines += 1  # For completion message
-        # Move cursor up and clear lines
-        print(f"\033[{total_lines}A\033[J", end="")
+        # Use the last frame's total_lines, plus one for completion message
+        lines_to_clear = prev_total_lines + 1 if prev_total_lines is not None else 0
+        print(f"\033[{lines_to_clear}A\033[J", end="")
     else:
         print(c.success(f"\n Animation complete! ({total_positions} steps)"))
 
@@ -788,6 +828,7 @@ def print_grid_animated_with_direction(
     else:
         frame_indices = list(range(total_positions))
 
+    prev_total_lines = None
     for frame_num, step in enumerate(frame_indices):
         current_pos = positions[step]
 
@@ -796,7 +837,7 @@ def print_grid_animated_with_direction(
             grid.width, grid.height, max_cols, max_rows, center=center or current_pos
         )
 
-        # Calculate total lines for cursor repositioning
+        # Calculate total lines for cursor repositioning for THIS frame
         total_lines = num_rows
         if show_coords:
             max_col = start_x + num_cols - 1
@@ -807,9 +848,10 @@ def print_grid_animated_with_direction(
             total_lines += 1  # Step counter line
 
         # Move cursor up to overwrite previous frame (except first frame)
-        if frame_num > 0:
-            # ANSI escape: move cursor up N lines
-            print(f"\033[{total_lines}A", end="")
+        if frame_num > 0 and prev_total_lines is not None:
+            print(f"\033[{prev_total_lines}A", end="")
+
+        prev_total_lines = total_lines
 
         # Get current direction
         current_dir = None
@@ -891,17 +933,8 @@ def print_grid_animated_with_direction(
         time.sleep(delay)
 
     if erase_after:
-        # Calculate lines to clear (same as total_lines used during animation)
-        total_lines = num_rows
-        if show_coords:
-            max_col = start_x + num_cols - 1
-            total_lines += 1  # Ones header line (always)
-            if max_col >= 10:
-                total_lines += 1  # Upper digits line
-        if show_step_count:
-            total_lines += 1  # Step counter line
-        total_lines += 1  # For completion message
-        # Move cursor up and clear lines
-        print(f"\033[{total_lines}A\033[J", end="")
+        # Use the last frame's total_lines, plus one for completion message
+        lines_to_clear = prev_total_lines + 1 if prev_total_lines is not None else 0
+        print(f"\033[{lines_to_clear}A\033[J", end="")
     else:
         print(c.success(f"\n Animation complete! ({total_positions} steps)"))
