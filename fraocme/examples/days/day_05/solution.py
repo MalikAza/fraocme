@@ -66,7 +66,8 @@ class Day5(Solver):
         self.debug(f"\nFinal max area: {c.bold(c.green(max_area))}")
         if best_corners:
             self.debug(
-                f"Best corners: {c.yellow(best_corners[0])} to {c.yellow(best_corners[1])}"
+                f"Best corners: {c.yellow(best_corners[0])} "
+                f"to {c.yellow(best_corners[1])}"
             )
 
             # Show the winning rectangle
@@ -101,7 +102,8 @@ class Day5(Solver):
         Find largest rectangle using two red tiles as opposite corners,
         where all interior tiles must be red or green.
 
-        Green tiles = outline connecting consecutive red tiles + interior of that outline
+        Green tiles = outline connecting consecutive red tiles
+        + interior of that outline
         """
         self.debug(
             c.bold("\n=== Part 2: Largest Rectangle (Interior Must Be Red/Green) ===")

@@ -95,7 +95,8 @@ class Grid(Generic[T]):
         default: T = ".",
     ) -> "Grid[T]":
         """
-        Create a grid from a set of positions, filling those positions with 'fill', others with 'default'.
+        Create a grid from a set of positions. Fill those positions with ``fill``
+        and use ``default`` for other cells.
 
         Args:
             positions: Set or list of (x, y) positions

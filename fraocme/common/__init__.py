@@ -60,6 +60,8 @@ __all__ = [
     "ranges_overlap",
     "range_intersection",
     "merge_ranges",
+    "range_coverage",
+    "within_range",
     "print_row_stats",
     "print_ranges",
     "print_dict_row",

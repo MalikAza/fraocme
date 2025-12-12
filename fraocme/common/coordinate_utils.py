@@ -1,5 +1,3 @@
-
-
 # =============================================================================
 # CORE: Lines and Outlines
 # =============================================================================
@@ -147,11 +145,9 @@ def polygon_interior_points(vertices: list[tuple[int, int]]) -> set[tuple[int, i
 
 
 # =============================================================================
-# RECTANGLES: Kept separate for PERFORMANCE
-#
+# RECTANGLES:
 # - rectangle_area: O(1) vs O(width * height) for generating all points
 # - rectangle_points: Still O(w*h), but simpler than building outline + flood fill
-# - For 90,000 x 90,000 grids, this matters!
 # =============================================================================
 
 
@@ -177,7 +173,9 @@ def rectangle_area(p1: tuple[int, int], p2: tuple[int, int]) -> int:
 
 def rectangle_points(p1: tuple[int, int], p2: tuple[int, int]) -> set[tuple[int, int]]:
     """
-    Return all points inside a rectangle. Use rectangle_area() if you only need the count.
+    Return all points inside a rectangle.
+
+    Use :func:`rectangle_area` if you only need the count.
 
     Args:
         p1: First corner (x1, y1)
