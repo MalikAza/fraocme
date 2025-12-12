@@ -65,45 +65,6 @@ def char_lines(raw: str, as_int: bool = True) -> list[list[int]] | list[list[str
     return [[digit for digit in line] for line in lines(raw)]
 
 
-def key_ints(
-    raw: str,
-    key_delimiter: str = ": ",
-    key_type: Callable[[str], K] = int,
-    value_type: Callable[[str], V] = int,
-) -> dict[K, list[V]]:
-    """
-    Parse input where each line has a key followed by space-separated integers.
-
-    Args:
-        key_delimiter: Separator between key and values (default: ": ")
-
-    Example input:
-        190: 10 19
-        3267: 81 40 27
-        83: 17 5
-    Returns: {190: [10, 19], 3267: [81, 40, 27], 83: [17, 5]}
-
-    Usage:
-        Default (integers)
-        data = key_ints(raw)
-        data[190]  # → [10, 19]
-
-        Strings (no conversion)
-        data = key_ints(raw, key_type=str, value_type=str)
-        data["apple"]  # → ["1", "two"]
-    """
-    result: dict[K, list[V]] = {}
-    for line in lines(raw):
-        key_str, values = line.split(key_delimiter, 1)
-        key = key_type(key_str)
-        if values.strip() == "":
-            vals: list[V] = []
-        else:
-            vals = [value_type(v) for v in values.split()]
-        result[key] = vals
-    return result
-
-
 # ─────────────────────────────────────────────────────────
 # Range parser
 # ─────────────────────────────────────────────────────────

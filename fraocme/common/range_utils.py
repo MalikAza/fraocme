@@ -131,6 +131,52 @@ def within_range(
     return False
 
 
+def subtract_interval(
+    base: tuple[int, int], remove: tuple[int, int]
+) -> list[tuple[int, int]]:
+    """
+    Subtract one interval from another, returning remaining pieces.
+
+    Args:
+        base: The base interval as (start, end)
+        remove: The interval to remove from base as (start, end)
+
+    Returns:
+        List of remaining intervals (0, 1 or 2 tuples). Endpoints are inclusive.
+
+    Examples:
+        subtract_interval((1, 10), (3, 5)) -> [(1, 2), (6, 10)]
+        subtract_interval((1, 5), (5, 10)) -> [(1, 4)]
+        subtract_interval((1, 5), (6, 10)) -> [(1, 5)]  # no overlap
+    """
+    a, b = base
+    c, d = remove
+
+    # No overlap
+    if d < a or c > b:
+        return [base]
+
+    # Remove covers base entirely
+    if c <= a and d >= b:
+        return []
+
+    remaining: list[tuple[int, int]] = []
+
+    # Left piece
+    if c > a:
+        left_end = min(b, c - 1)
+        if a <= left_end:
+            remaining.append((a, left_end))
+
+    # Right piece
+    if d < b:
+        right_start = max(a, d + 1)
+        if right_start <= b:
+            remaining.append((right_start, b))
+
+    return remaining
+
+
 def range_coverage(
     ranges: list[tuple[int, int]], mode: RangeMode = RangeMode.HALF_OPEN
 ) -> int:

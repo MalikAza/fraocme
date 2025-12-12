@@ -1,7 +1,7 @@
 # Day 04 - Range Utility Functions
 
 ## Overview
-Demonstrates range manipulation functions from `fraocme.common.utils`.
+Demonstrates range manipulation functions from `fraocme.common.range_utils`.
 
 ## Functions Demonstrated
 

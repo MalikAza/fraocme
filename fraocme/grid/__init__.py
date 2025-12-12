@@ -1,5 +1,5 @@
 """
-Grid module for 2D grid operations in Advent of Code.
+Grid module for 2D grid operations.
 
 Provides a high-performance, immutable Grid[T] class with:
 - Efficient structural sharing for mutations
