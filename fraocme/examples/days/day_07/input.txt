@@ -1,0 +1,3 @@
+initial: 42
+multiplier: 7
+modulo: 1000

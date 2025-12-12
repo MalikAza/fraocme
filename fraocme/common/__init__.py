@@ -1,4 +1,5 @@
-from .parser import coordinates, ints, key_ints, lines, mapped, ranges, sections
+from .decorators import memoize_recursive
+from .parser import coordinates, ints, lines, mapped, ranges, sections
 from .printer import (
     print_dict_head,
     print_dict_row,
@@ -24,15 +25,6 @@ from .sequence_utils import (
     windows,
 )
 from .types import RangeMode
-from .utils import (
-    digits,
-    divisors,
-    from_digits,
-    gcd,
-    lcm,
-    sign,
-    wrap,
-)
 
 __all__ = [
     "coordinates",
@@ -68,4 +60,5 @@ __all__ = [
     "print_dict_head",
     "print_max_in_rows",
     "RangeMode",
+    "memoize_recursive",
 ]

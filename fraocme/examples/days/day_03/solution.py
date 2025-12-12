@@ -1,7 +1,7 @@
 """
 Day 03 Example: Numeric Utility Functions
 
-Demonstrates numeric functions from fraocme.common.utils:
+Demonstrates numeric functions from fraocme.math.:
 - sign() - Get sign of number (-1, 0, 1)
 - digits() - Extract digits from integer
 - from_digits() - Combine digits into integer
@@ -13,7 +13,7 @@ Demonstrates numeric functions from fraocme.common.utils:
 
 from fraocme import Solver
 from fraocme.common.parser import ints, sections
-from fraocme.common.utils import (
+from fraocme.math import (
     digits,
     divisors,
     from_digits,

@@ -1,7 +1,7 @@
 # Day 03 - Numeric Utility Functions
 
 ## Overview
-Demonstrates numeric manipulation functions from `fraocme.common.utils`.
+Demonstrates numeric manipulation functions from `fraocme.math`.
 
 ## Functions Demonstrated
 

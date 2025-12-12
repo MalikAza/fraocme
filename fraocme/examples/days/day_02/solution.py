@@ -1,7 +1,7 @@
 """
 Day 02 Example: Sequence Utility Functions
 
-Demonstrates sequence manipulation functions from fraocme.common.utils:
+Demonstrates sequence manipulation functions from fraocme.common.sequence_utils:
 - frequencies() - Count element occurrences
 - all_equal() - Check if all elements are identical
 - chunks() - Split into fixed-size groups

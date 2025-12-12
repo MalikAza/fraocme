@@ -55,7 +55,7 @@ This allows adding more examples in each category as needed.
 **File**: `day_02/solution.py`
 
 **Demonstrates**:
-- Sequence manipulation from `fraocme.common.utils`
+- Sequence manipulation from `fraocme.common.sequence_utils`
 - `frequencies()` - Count occurrences
 - `all_equal()` - Check if all same
 - `chunks()` - Fixed-size groups
@@ -73,7 +73,7 @@ This allows adding more examples in each category as needed.
 **File**: `day_03/solution.py`
 
 **Demonstrates**:
-- Numeric functions from `fraocme.common.utils`
+- Numeric functions from `fraocme.math`:
 - `sign()` - Get sign (-1, 0, 1)
 - `digits()` - Extract digits
 - `from_digits()` - Combine digits
@@ -90,7 +90,7 @@ This allows adding more examples in each category as needed.
 **File**: `day_04/solution.py`
 
 **Demonstrates**:
-- Range manipulation from `fraocme.common.utils`
+- Range manipulation from `fraocme.common.range_utils`
 - `ranges_overlap()` - Check overlaps
 - `range_intersection()` - Get overlap
 - `merge_ranges()` - Merge overlapping ranges
@@ -98,6 +98,32 @@ This allows adding more examples in each category as needed.
 - `range_coverage()` - Calculate coverage
 
 **Run**: `fraocme run 4 --debug`
+
+---
+
+#### Day 05 - Rectangle / Coordinate Utilities
+**File**: `day_05/solution.py`
+
+**Demonstrates**:
+- Parsing coordinate lists and character grids
+- Building outlines and flood-filling regions with `fraocme.common.coordinate_utils`
+- Finding largest valid rectangles using `largest_valid_rectangle()`
+- Grid display and highlighting with `fraocme.grid` printers
+
+**Run**: `fraocme run 5 --debug`
+
+---
+
+#### Day 06 - Graph Utilities
+**File**: `day_06/solution.py`
+
+**Demonstrates**:
+- Counting DAG paths between two nodes with `count_paths_dag()`
+- Listing example paths with `enumerate_all_paths()`
+- Finding critical nodes that all paths pass through with `find_critical_nodes()`
+- Pretty debug printing using `fraocme.graph.printer` and `fraocme.ui.colors`
+
+**Run**: `fraocme run 6 --debug`
 
 ---
 
@@ -223,7 +249,7 @@ fraocme show <day>
 ```python
 from fraocme import Solver
 from fraocme.common.parser import sections, lines, ints, key_ints
-from fraocme.common.utils import chunks, windows, frequencies, gcd, lcm
+from fraocme.common.sequence_utils import chunks, windows, frequencies, pairwise, all_equal
 from fraocme.common.printer import print_ranges, print_dict_head
 from fraocme.ui.colors import c
 ```

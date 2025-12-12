@@ -6,7 +6,6 @@ Demonstrates all common parser functions from fraocme.common.parser:
 - lines() - Parse as list of strings
 - ints() - Parse as list of integers
 - char_lines() - Parse digits per line
-- key_ints() - Parse key-value pairs
 - ranges() - Parse integer ranges
 - mapped() - Custom line parser
 """
@@ -15,13 +14,12 @@ from fraocme import Solver
 from fraocme.common.parser import (
     char_lines,
     ints,
-    key_ints,
     lines,
     mapped,
     ranges,
     sections,
 )
-from fraocme.common.printer import print_dict_head, print_ranges, print_row_stats
+from fraocme.common.printer import print_ranges, print_row_stats
 from fraocme.ui.colors import c
 
 
@@ -74,13 +72,6 @@ class Day1(Solver):
 
         blocks = sections(raw)
 
-        # 5. key_ints() - Parse key-value pairs
-        self.debug(c.cyan("5. key_ints() - Parse key-value pairs:"))
-        equations_text = blocks[3]
-        equations = key_ints(equations_text, key_delimiter=": ")
-        self.debug(f"   Parsed {len(equations)} equations")
-        self.debug(lambda: print_dict_head(equations, n=3))
-
         # 6. ranges() - Parse integer ranges
         self.debug(c.cyan("\n6. ranges() - Parse ranges:"))
         range_text = blocks[4].strip()
@@ -103,8 +94,7 @@ class Day1(Solver):
 
         # Calculate result based on equations
         total = 0
-        for key, values in equations.items():
-            if sum(values) == key or (len(values) > 1 and values[0] * values[1] == key):
-                total += key
+        for x, y in coords:
+            total += x * y + x - y
 
         return total

@@ -1,7 +1,7 @@
 """
 Day 04 Example: Range Utility Functions
 
-Demonstrates range manipulation functions from fraocme.common.utils:
+Demonstrates range manipulation functions from fraocme.common.range_utils:
 - ranges_overlap() - Check if two ranges overlap
 - range_intersection() - Get overlapping part
 - merge_ranges() - Merge overlapping ranges

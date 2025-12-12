@@ -1,7 +1,7 @@
 # Day 02 - Sequence Utility Functions
 
 ## Overview
-Demonstrates sequence manipulation functions from `fraocme.common.utils`.
+Demonstrates sequence manipulation functions from `fraocme.common.sequence_utils`.
 
 ## Functions Demonstrated
 
