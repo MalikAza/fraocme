@@ -33,6 +33,68 @@ class TestGridParser(unittest.TestCase):
         self.assertEqual(grid.at(0, 0), 10)
         self.assertEqual(grid.at(2, 1), 60)
 
+    def test_from_dense_regex_single_space(self):
+        """Test regex splitting with single space delimiter."""
+        raw = "10 20 30\n40 50 60"
+        grid = Grid.from_dense(raw, delimiter=" ")
+        self.assertEqual(grid.dimensions, (3, 2))
+        self.assertEqual(grid.at(0, 0), 10)
+        self.assertEqual(grid.at(1, 0), 20)
+        self.assertEqual(grid.at(2, 0), 30)
+        self.assertEqual(grid.at(0, 1), 40)
+        self.assertEqual(grid.at(2, 1), 60)
+
+    def test_from_dense_regex_multiple_spaces(self):
+        """Test regex splitting with multiple spaces pattern."""
+        raw = "10  20   30\n40   50  60"
+        grid = Grid.from_dense(raw, delimiter=r"\s+")
+        self.assertEqual(grid.dimensions, (3, 2))
+        self.assertEqual(grid.at(0, 0), 10)
+        self.assertEqual(grid.at(2, 0), 30)
+        self.assertEqual(grid.at(2, 1), 60)
+
+    def test_from_dense_regex_comma_delimiter(self):
+        """Test regex splitting with comma delimiter."""
+        raw = "a,b,c\nd,e,f"
+        grid = Grid.from_dense(raw, delimiter=",", cell_parser=str)
+        self.assertEqual(grid.dimensions, (3, 2))
+        self.assertEqual(grid.at(0, 0), "a")
+        self.assertEqual(grid.at(1, 0), "b")
+        self.assertEqual(grid.at(2, 0), "c")
+        self.assertEqual(grid.at(0, 1), "d")
+        self.assertEqual(grid.at(2, 1), "f")
+
+    def test_from_dense_regex_comma_or_semicolon(self):
+        """Test regex splitting with alternation pattern (comma or semicolon)."""
+        raw = "10,20;30\n40;50,60"
+        grid = Grid.from_dense(raw, delimiter=r"[,;]")
+        self.assertEqual(grid.dimensions, (3, 2))
+        self.assertEqual(grid.at(0, 0), 10)
+        self.assertEqual(grid.at(1, 0), 20)
+        self.assertEqual(grid.at(2, 0), 30)
+        self.assertEqual(grid.at(0, 1), 40)
+        self.assertEqual(grid.at(2, 1), 60)
+
+    def test_from_dense_regex_mixed_whitespace(self):
+        """Test regex splitting with mixed whitespace pattern."""
+        raw = "a\tb c\nd e\tf"
+        grid = Grid.from_dense(raw, delimiter=r"[\s]+", cell_parser=str)
+        self.assertEqual(grid.dimensions, (3, 2))
+        self.assertEqual(grid.at(0, 0), "a")
+        self.assertEqual(grid.at(1, 0), "b")
+        self.assertEqual(grid.at(2, 0), "c")
+        self.assertEqual(grid.at(0, 1), "d")
+        self.assertEqual(grid.at(2, 1), "f")
+
+    def test_from_dense_regex_custom_pattern(self):
+        """Test regex splitting with custom pattern."""
+        raw = "10--20--30\n40--50--60"
+        grid = Grid.from_dense(raw, delimiter=r"--")
+        self.assertEqual(grid.dimensions, (3, 2))
+        self.assertEqual(grid.at(0, 0), 10)
+        self.assertEqual(grid.at(1, 0), 20)
+        self.assertEqual(grid.at(2, 0), 30)
+
     def test_create_with_default_value(self):
         """Test creating grid with default value."""
         grid = Grid.create(3, 2, ".")

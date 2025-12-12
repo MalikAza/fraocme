@@ -1,5 +1,6 @@
 """Grid parsing utilities and factory methods."""
 
+import re
 from typing import Callable, TypeVar
 
 from .core import Grid
@@ -119,7 +120,7 @@ def from_dense(
     """
     lines = raw.strip().split("\n")
     data = tuple(
-        tuple(cell_parser(cell) for cell in line.split(delimiter)) for line in lines
+        tuple(cell_parser(cell) for cell in re.split(delimiter, line)) for line in lines
     )
     return Grid(data)
 
