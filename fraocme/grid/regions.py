@@ -87,7 +87,9 @@ def flood_fill(
         Region containing all connected matching positions
 
     Example input:
-        grid = Grid.from_chars("##.\\n#..\\n...")
+        grid = Grid.from_chars("##.
+                                #..
+                                #..")
 
     Example usage:
         region = grid.flood_fill((0, 0), '#')

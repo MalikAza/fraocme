@@ -5,13 +5,40 @@ from contextlib import redirect_stdout
 from io import StringIO
 
 from fraocme.common import parser
-from fraocme.common import utils as common_utils
 from fraocme.common.printer import (
     print_dict_head,
     print_dict_row,
     print_max_in_rows,
     print_ranges,
     print_row_stats,
+)
+from fraocme.common.range_utils import (
+    merge_ranges,
+    range_coverage,
+    range_intersection,
+    ranges_overlap,
+    within_range,
+)
+from fraocme.common.sequence_utils import (
+    all_equal,
+    chunks,
+    flatten,
+    frequencies,
+    pairwise,
+    rotate,
+    unique,
+    windows,
+)
+from fraocme.common.utils import (
+    digits,
+    divisors,
+    euclidean_distance,
+    from_digits,
+    gcd,
+    lcm,
+    sign,
+    squared_euclidean_distance,
+    wrap,
 )
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
@@ -178,81 +205,69 @@ class TestCommonParser(unittest.TestCase):
 class TestCommonUtils(unittest.TestCase):
     def test_frequencies_and_all_equal(self):
         data = ["a", "b", "a", "c", "a", "b"]
-        self.assertEqual(common_utils.frequencies(data), {"a": 3, "b": 2, "c": 1})
-        self.assertTrue(common_utils.all_equal([7, 7, 7]))
-        self.assertFalse(common_utils.all_equal([1, 2, 1]))
-        self.assertTrue(common_utils.all_equal([]))
+        self.assertEqual(frequencies(data), {"a": 3, "b": 2, "c": 1})
+        self.assertTrue(all_equal([7, 7, 7]))
+        self.assertFalse(all_equal([1, 2, 1]))
+        self.assertTrue(all_equal([]))
 
     def test_chunks_windows_pairwise(self):
         data = [1, 2, 3, 4, 5, 6, 7]
-        self.assertEqual(common_utils.chunks(data, 3), [[1, 2, 3], [4, 5, 6], [7]])
-        self.assertEqual(
-            common_utils.windows([1, 2, 3, 4], 2), [[1, 2], [2, 3], [3, 4]]
-        )
-        self.assertEqual(common_utils.pairwise([1, 2, 3, 4]), [(1, 2), (2, 3), (3, 4)])
+        self.assertEqual(chunks(data, 3), [[1, 2, 3], [4, 5, 6], [7]])
+        self.assertEqual(windows([1, 2, 3, 4], 2), [[1, 2], [2, 3], [3, 4]])
+        self.assertEqual(pairwise([1, 2, 3, 4]), [(1, 2), (2, 3), (3, 4)])
 
     def test_rotate_unique_flatten(self):
-        self.assertEqual(common_utils.rotate([1, 2, 3, 4, 5], -2), [3, 4, 5, 1, 2])
-        self.assertEqual(common_utils.rotate([1, 2, 3, 4, 5], 2), [4, 5, 1, 2, 3])
-        self.assertEqual(common_utils.rotate([], 3), [])
-        self.assertEqual(common_utils.unique([1, 2, 2, 3, 1, 4, 2]), [1, 2, 3, 4])
-        self.assertEqual(common_utils.flatten([[1, 2], [3, 4], [5]]), [1, 2, 3, 4, 5])
+        self.assertEqual(rotate([1, 2, 3, 4, 5], -2), [3, 4, 5, 1, 2])
+        self.assertEqual(rotate([1, 2, 3, 4, 5], 2), [4, 5, 1, 2, 3])
+        self.assertEqual(rotate([], 3), [])
+        self.assertEqual(unique([1, 2, 2, 3, 1, 4, 2]), [1, 2, 3, 4])
+        self.assertEqual(flatten([[1, 2], [3, 4], [5]]), [1, 2, 3, 4, 5])
 
     def test_sign_digits_wrap(self):
-        self.assertEqual(common_utils.sign(5), 1)
-        self.assertEqual(common_utils.sign(-3), -1)
-        self.assertEqual(common_utils.sign(0), 0)
-        self.assertEqual(common_utils.digits(-987), [9, 8, 7])
-        self.assertEqual(common_utils.wrap(105, 100), 5)
-        self.assertEqual(common_utils.wrap(-10, 100), 90)
+        self.assertEqual(sign(5), 1)
+        self.assertEqual(sign(-3), -1)
+        self.assertEqual(sign(0), 0)
+        self.assertEqual(digits(-987), [9, 8, 7])
+        self.assertEqual(wrap(105, 100), 5)
+        self.assertEqual(wrap(-10, 100), 90)
 
     def test_number_theory_helpers(self):
-        self.assertEqual(common_utils.divisors(12), [1, 2, 3, 4, 6, 12])
-        self.assertEqual(common_utils.gcd(24, 36, 18), 6)
-        self.assertEqual(common_utils.lcm(3, 4, 5), 60)
-        self.assertEqual(common_utils.from_digits([9, 8, 7]), 987)
+        self.assertEqual(divisors(12), [1, 2, 3, 4, 6, 12])
+        self.assertEqual(gcd(24, 36, 18), 6)
+        self.assertEqual(lcm(3, 4, 5), 60)
+        self.assertEqual(from_digits([9, 8, 7]), 987)
 
     def test_euclidean_distance_2d(self):
         """Test 2D Euclidean distance."""
         # Basic 3-4-5 triangle
-        self.assertEqual(common_utils.euclidean_distance((0, 0), (3, 4)), 5.0)
+        self.assertEqual(euclidean_distance((0, 0), (3, 4)), 5.0)
         # Same point
-        self.assertEqual(common_utils.euclidean_distance((5, 5), (5, 5)), 0.0)
+        self.assertEqual(euclidean_distance((5, 5), (5, 5)), 0.0)
         # With floats
-        self.assertEqual(common_utils.euclidean_distance((1.5, 2.5), (4.5, 6.5)), 5.0)
+        self.assertEqual(euclidean_distance((1.5, 2.5), (4.5, 6.5)), 5.0)
 
     def test_euclidean_distance_3d(self):
         """Test 3D Euclidean distance (junction boxes)."""
-        # Test with junction box coordinates
-        # d = sqrt((57-162)^2 + (618-817)^2 + (57-812)^2)
-        # d = sqrt(11025 + 39601 + 570025) = sqrt(620651) = 787.814064
-        dist = common_utils.euclidean_distance((162, 817, 812), (57, 618, 57))
+        dist = euclidean_distance((162, 817, 812), (57, 618, 57))
         self.assertAlmostEqual(dist, 787.814064, places=5)
 
-        # Another junction box pair
-        dist2 = common_utils.euclidean_distance((162, 817, 812), (906, 360, 560))
+        dist2 = euclidean_distance((162, 817, 812), (906, 360, 560))
         self.assertAlmostEqual(dist2, 908.784353, places=5)
 
     def test_euclidean_distance_different_dimensions(self):
         """Test that different dimensions raise ValueError."""
         with self.assertRaises(ValueError) as context:
-            common_utils.euclidean_distance((1, 2), (1, 2, 3))
+            euclidean_distance((1, 2), (1, 2, 3))
         self.assertIn("same dimensions", str(context.exception))
 
     def test_squared_euclidean_distance_2d(self):
         """Test 2D squared Euclidean distance."""
-        # Basic 3-4-5 triangle (squared)
-        self.assertEqual(common_utils.squared_euclidean_distance((0, 0), (3, 4)), 25.0)
-        # Same point
-        self.assertEqual(common_utils.squared_euclidean_distance((5, 5), (5, 5)), 0.0)
+        self.assertEqual(squared_euclidean_distance((0, 0), (3, 4)), 25.0)
+        self.assertEqual(squared_euclidean_distance((5, 5), (5, 5)), 0.0)
 
     def test_squared_euclidean_distance_3d(self):
         """Test 3D squared Euclidean distance."""
-        # Junction box coordinates
-        # (57-162)^2 + (618-817)^2 + (57-812)^2 = 11025 + 39601 + 570025 = 620651
-        sq_dist = common_utils.squared_euclidean_distance(
-            (162, 817, 812), (57, 618, 57)
-        )
+        sq_dist = squared_euclidean_distance((162, 817, 812), (57, 618, 57))
         self.assertEqual(sq_dist, 620651.0)
 
     def test_squared_euclidean_distance_comparison(self):
@@ -261,66 +276,48 @@ class TestCommonUtils(unittest.TestCase):
         box2 = (57, 618, 57)
         box3 = (906, 360, 560)
 
-        # Find which box is closer to box1
-        dist_to_box2 = common_utils.squared_euclidean_distance(box1, box2)
-        dist_to_box3 = common_utils.squared_euclidean_distance(box1, box3)
+        dist_to_box2 = squared_euclidean_distance(box1, box2)
+        dist_to_box3 = squared_euclidean_distance(box1, box3)
 
-        # box2 should be closer
         self.assertLess(dist_to_box2, dist_to_box3)
 
     def test_squared_euclidean_distance_different_dimensions(self):
         """Test that different dimensions raise ValueError for squared distance."""
         with self.assertRaises(ValueError) as context:
-            common_utils.squared_euclidean_distance((1, 2), (1, 2, 3))
+            squared_euclidean_distance((1, 2), (1, 2, 3))
         self.assertIn("same dimensions", str(context.exception))
 
     def test_range_helpers(self):
-        self.assertTrue(common_utils.ranges_overlap((1, 5), (5, 10)))
-        self.assertFalse(common_utils.ranges_overlap((1, 3), (4, 6)))
+        self.assertTrue(ranges_overlap((1, 5), (5, 10)))
+        self.assertFalse(ranges_overlap((1, 3), (4, 6)))
 
-        self.assertEqual(common_utils.range_intersection((1, 10), (5, 15)), (5, 10))
-        self.assertIsNone(common_utils.range_intersection((1, 5), (7, 10)))
+        self.assertEqual(range_intersection((1, 10), (5, 15)), (5, 10))
+        self.assertIsNone(range_intersection((1, 5), (7, 10)))
 
-        merged = common_utils.merge_ranges(
-            [(10, 15), (1, 5), (3, 8), (16, 18)], inclusive=False
-        )
+        merged = merge_ranges([(10, 15), (1, 5), (3, 8), (16, 18)], inclusive=False)
 
         self.assertEqual(merged, [(1, 8), (10, 15), (16, 18)])
 
-        self.assertTrue(
-            common_utils.within_range(5, [(1, 5), (10, 15)], inclusive=True)
-        )
-        self.assertFalse(
-            common_utils.within_range(5, [(1, 5), (10, 15)], inclusive=False)
-        )
+        self.assertTrue(within_range(5, [(1, 5), (10, 15)], inclusive=True))
+        self.assertFalse(within_range(5, [(1, 5), (10, 15)], inclusive=False))
 
-        # Test with new RangeMode API
         from fraocme.common import RangeMode
 
         self.assertEqual(
-            common_utils.range_coverage(
-                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.INCLUSIVE
-            ),
-            7,
+            range_coverage([(1, 3), (5, 7), (2, 6)], mode=RangeMode.INCLUSIVE), 7
         )
         self.assertEqual(
-            common_utils.range_coverage(
-                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.HALF_OPEN
-            ),
-            6,
+            range_coverage([(1, 3), (5, 7), (2, 6)], mode=RangeMode.HALF_OPEN), 6
         )
         self.assertEqual(
-            common_utils.range_coverage(
-                [(1, 3), (5, 7), (2, 6)], mode=RangeMode.EXCLUSIVE
-            ),
-            5,
+            range_coverage([(1, 3), (5, 7), (2, 6)], mode=RangeMode.EXCLUSIVE), 5
         )
 
     def test_merge_ranges_empty(self):
-        self.assertEqual(common_utils.merge_ranges([], inclusive=True), [])
+        self.assertEqual(merge_ranges([], inclusive=True), [])
 
     def test_within_range_exclusive_hit(self):
-        self.assertTrue(common_utils.within_range(5, [(4, 6)], inclusive=False))
+        self.assertTrue(within_range(5, [(4, 6)], inclusive=False))
 
 
 class TestCommonPrinterExtras(unittest.TestCase):

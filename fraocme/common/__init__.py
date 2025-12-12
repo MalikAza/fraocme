@@ -6,25 +6,31 @@ from .printer import (
     print_ranges,
     print_row_stats,
 )
-from .types import RangeMode
-from .utils import (
+from .range_utils import (
+    merge_ranges,
+    range_coverage,
+    range_intersection,
+    ranges_overlap,
+    within_range,
+)
+from .sequence_utils import (
     all_equal,
     chunks,
-    digits,
-    divisors,
     flatten,
     frequencies,
+    pairwise,
+    rotate,
+    unique,
+    windows,
+)
+from .types import RangeMode
+from .utils import (
+    digits,
+    divisors,
     from_digits,
     gcd,
     lcm,
-    merge_ranges,
-    pairwise,
-    range_intersection,
-    ranges_overlap,
-    rotate,
     sign,
-    unique,
-    windows,
     wrap,
 )
 
@@ -54,6 +60,8 @@ __all__ = [
     "ranges_overlap",
     "range_intersection",
     "merge_ranges",
+    "range_coverage",
+    "within_range",
     "print_row_stats",
     "print_ranges",
     "print_dict_row",
